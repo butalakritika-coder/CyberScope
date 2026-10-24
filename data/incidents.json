@@ -1,0 +1,45 @@
+[
+  {
+    "incident_id": "TEST-001",
+    "name": "Example Ransomware Incident",
+    "category": "Ransomware",
+    "summary": "A fictional incident used to test CyberScope's data structure.",
+    "findings": [
+      {
+        "finding_id": "FIND-001",
+        "claim": "The fictional organisation reported unauthorised access to one of its systems.",
+        "evidence_status": "unverified",
+        "source_ids": [
+          "SRC-001"
+        ]
+      },
+      {
+        "finding_id": "FIND-002",
+        "claim": "The fictional incident resulted in temporary disruption to business operations.",
+        "evidence_status": "unverified",
+        "source_ids": [
+          "SRC-002"
+        ]
+      }
+    ],
+    "techniques": [],
+    "sources": [
+      {
+        "source_id": "SRC-001",
+        "title": "Fictional Test Report A",
+        "publisher": "CyberScope Test Data",
+        "url": null,
+        "published_date": null,
+        "source_type": "synthetic_test_data"
+      },
+      {
+        "source_id": "SRC-002",
+        "title": "Fictional Test Report B",
+        "publisher": "CyberScope Test Data",
+        "url": null,
+        "published_date": null,
+        "source_type": "synthetic_test_data"
+      }
+    ]
+  }
+]
