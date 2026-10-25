@@ -1,3 +1,4 @@
+
 [
   {
     "incident_id": "TEST-001",
@@ -9,17 +10,13 @@
         "finding_id": "FIND-001",
         "claim": "The fictional organisation reported unauthorised access to one of its systems.",
         "evidence_status": "unverified",
-        "source_ids": [
-          "SRC-001"
-        ]
+        "source_ids": ["SRC-001"]
       },
       {
         "finding_id": "FIND-002",
         "claim": "The fictional incident resulted in temporary disruption to business operations.",
         "evidence_status": "unverified",
-        "source_ids": [
-          "SRC-002"
-        ]
+        "source_ids": ["SRC-002"]
       }
     ],
     "techniques": [],
@@ -39,6 +36,59 @@
         "url": null,
         "published_date": null,
         "source_type": "synthetic_test_data"
+      }
+    ]
+  },
+  {
+    "incident_id": "INC-2017-WANNACRY",
+    "name": "WannaCry Ransomware Outbreak",
+    "category": "Ransomware",
+    "summary": "A major ransomware outbreak reported in May 2017. WannaCry encrypted files and used worm-like propagation to spread to vulnerable Windows systems.",
+    "findings": [
+      {
+        "finding_id": "WAN-F001",
+        "claim": "WannaCry exploited a vulnerability in Microsoft's Windows SMB implementation to spread to vulnerable systems.",
+        "evidence_status": "supported",
+        "source_ids": ["WAN-S001", "WAN-S002"]
+      },
+      {
+        "finding_id": "WAN-F002",
+        "claim": "Microsoft released the MS17-010 security update in March 2017, before the WannaCry outbreak.",
+        "evidence_status": "supported",
+        "source_ids": ["WAN-S001", "WAN-S002"]
+      },
+      {
+        "finding_id": "WAN-F003",
+        "claim": "WannaCry had worm-like capabilities that enabled it to attempt to spread to other vulnerable computers.",
+        "evidence_status": "supported",
+        "source_ids": ["WAN-S002", "WAN-S003"]
+      }
+    ],
+    "techniques": [],
+    "sources": [
+      {
+        "source_id": "WAN-S001",
+        "title": "Customer Guidance for WannaCrypt attacks",
+        "publisher": "Microsoft Security Response Center",
+        "url": "https://www.microsoft.com/en-us/msrc/blog/2017/05/customer-guidance-for-wannacrypt-attacks",
+        "published_date": "2017-05-13",
+        "source_type": "vendor_advisory"
+      },
+      {
+        "source_id": "WAN-S002",
+        "title": "WannaCry/WannaCrypt Ransomware Advisory CIAD-2017-0024",
+        "publisher": "CERT-In",
+        "url": "https://www.cert-in.org.in/s2cMainServlet?VLCODE=CIAD-2017-0024&pageid=PUBVLNOTES02",
+        "published_date": null,
+        "source_type": "government_advisory"
+      },
+      {
+        "source_id": "WAN-S003",
+        "title": "Ransom:Win32/WannaCrypt Threat Description",
+        "publisher": "Microsoft Security Intelligence",
+        "url": "https://www.microsoft.com/en-us/wdsi/threats/malware-encyclopedia-description?Name=Ransom%3AWin32%2FWannaCrypt",
+        "published_date": null,
+        "source_type": "technical_analysis"
       }
     ]
   }
