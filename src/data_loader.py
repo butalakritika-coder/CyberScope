@@ -175,19 +175,42 @@ def validate_incidents(incidents):
 
         # Technique mapping is intentionally basic at this stage.
         for technique_index, technique in enumerate(techniques):
+            technique_location = (
+                f"{location}, technique at index {technique_index}"
+            )
+
             if not isinstance(technique, dict):
-                errors.append(
-                    f"{location}, technique at index {technique_index} "
-                    "must be an object."
-                )
+                errors.append(f"{technique_location} must be an object.")
                 continue
 
             technique_id = technique.get("technique_id")
+
             if not isinstance(technique_id, str) or not technique_id.strip():
                 errors.append(
-                    f"{location}, technique at index {technique_index} "
-                    "has an invalid technique_id."
+                    f"{technique_location} has an invalid technique_id."
                 )
+
+            technique_name = technique.get("name")
+
+            if not isinstance(technique_name, str) or not technique_name.strip():
+                errors.append(
+                    f"{technique_location} has an invalid name."
+                )
+
+            referenced_sources = technique.get("source_ids")
+
+            if not isinstance(referenced_sources, list):
+                errors.append(
+                    f"{technique_location}: 'source_ids' must be a list."
+                )
+                continue
+
+            for source_id in referenced_sources:
+                if source_id not in source_ids:
+                    errors.append(
+                        f"{technique_location} references unknown source: "
+                        f"{source_id}"
+                    )
 
     return errors
 

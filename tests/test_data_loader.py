@@ -122,6 +122,33 @@ class TestValidateIncidents(unittest.TestCase):
         self.assertGreater(len(incidents), 0)
 
 
+    def test_technique_with_unknown_source(self):
+        incidents = [
+            {
+                "incident_id": "TEST-TECH",
+                "name": "Test Incident",
+                "category": "Ransomware",
+                "summary": "A fictional test incident.",
+                "findings": [],
+                "techniques": [
+                    {
+                        "technique_id": "T1234",
+                        "name": "Example Technique",
+                        "source_ids": ["SRC-999"],
+                    }
+                ],
+                "sources": [],
+            }
+        ]
+
+        errors = validate_incidents(incidents)
+
+        self.assertTrue(
+            any("references unknown source: SRC-999" in error
+                for error in errors)
+        )
+
+
 if __name__ == "__main__":
     unittest.main()
 
