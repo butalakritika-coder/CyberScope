@@ -17,6 +17,7 @@ def get_finding_sources(incidents, incident_id, finding_id):
                 ]
 
                 return {
+                    "incident": incident,
                     "finding": finding,
                     "sources": sources,
                 }
@@ -32,14 +33,17 @@ def format_evidence_report(result):
     if result is None:
         return "Finding or incident not found."
 
+    incident = result.get("incident", {})
     finding = result["finding"]
     sources = result["sources"]
 
     lines = [
-        "=" * 45,
-        "          CYBERSCOPE EVIDENCE",
-        "=" * 45,
+        "=" * 50,
+        "          CYBERSCOPE EVIDENCE REPORT",
+        "=" * 50,
         "",
+        f"Incident: {incident.get('name', 'Not available')}",
+        f"Incident ID: {incident.get('incident_id', 'Not available')}",
         f"Finding ID: {finding['finding_id']}",
         "",
         "Finding:",
@@ -59,9 +63,10 @@ def format_evidence_report(result):
             lines.append(f"   URL: {source.get('url') or 'Not available'}")
             lines.append("")
 
-    lines.append("=" * 45)
+    lines.append("=" * 50)
 
     return "\n".join(lines)
+
 
 def main():
     """Run an interactive evidence lookup."""
@@ -74,6 +79,7 @@ def main():
         return
 
     print("\n=== CyberScope Evidence Lookup ===")
+
     incident_id = input("Enter incident ID: ").strip()
     finding_id = input("Enter finding ID: ").strip()
 
