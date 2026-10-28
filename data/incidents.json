@@ -64,7 +64,23 @@
         "source_ids": ["WAN-S002", "WAN-S003"]
       }
     ],
-    "techniques": [],
+    "techniques": [
+      {
+        "technique_id": "T1210",
+        "name": "Exploitation of Remote Services",
+        "source_ids": ["WAN-S004"]
+      },
+      {
+        "technique_id": "T1486",
+        "name": "Data Encrypted for Impact",
+        "source_ids": ["WAN-S004"]
+      },
+      {
+        "technique_id": "T1570",
+        "name": "Lateral Tool Transfer",
+        "source_ids": ["WAN-S004"]
+      }
+    ],
     "sources": [
       {
         "source_id": "WAN-S001",
@@ -89,6 +105,14 @@
         "url": "https://www.microsoft.com/en-us/wdsi/threats/malware-encyclopedia-description?Name=Ransom%3AWin32%2FWannaCrypt",
         "published_date": null,
         "source_type": "technical_analysis"
+      },
+      {
+        "source_id": "WAN-S004",
+        "title": "WannaCry, Software S0366",
+        "publisher": "MITRE ATT&CK",
+        "url": "https://attack.mitre.org/software/S0366/",
+        "published_date": null,
+        "source_type": "threat_intelligence_framework"
       }
     ]
   }
