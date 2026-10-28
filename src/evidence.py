@@ -26,7 +26,37 @@ def get_finding_sources(incidents, incident_id, finding_id):
 
     return None
 
+def analyze_evidence_quality(result):
+    """Summarize the source coverage for a finding."""
 
+    if result is None:
+        return None
+
+    sources = result.get("sources", [])
+
+    publishers = {
+        source.get("publisher", "").strip().casefold()
+        for source in sources
+        if source.get("publisher", "").strip()
+    }
+
+    source_count = len(sources)
+    publisher_count = len(publishers)
+
+    if source_count == 0:
+        assessment = "No linked sources available"
+    elif source_count == 1:
+        assessment = "Limited source coverage: only one source linked"
+    elif publisher_count == 1:
+        assessment = "Multiple sources linked, but only one publisher represented"
+    else:
+        assessment = "Multiple sources and publishers represented"
+
+    return {
+        "source_count": source_count,
+        "publisher_count": publisher_count,
+        "assessment": assessment,
+    }
 def format_evidence_report(result):
     """Format a finding and its sources into a readable report."""
 
@@ -36,6 +66,7 @@ def format_evidence_report(result):
     incident = result.get("incident", {})
     finding = result["finding"]
     sources = result["sources"]
+    quality = analyze_evidence_quality(result)
 
     lines = [
         "=" * 50,
@@ -50,6 +81,11 @@ def format_evidence_report(result):
         finding["claim"],
         "",
         f"Evidence Status: {finding['evidence_status'].replace('_', ' ').title()}",
+        "",
+        "Evidence Quality Analysis:",
+        f"Linked Sources: {quality['source_count']}",
+        f"Distinct Publishers: {quality['publisher_count']}",
+        f"Assessment: {quality['assessment']}",
         "",
         "Associated Sources:",
     ]
