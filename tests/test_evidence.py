@@ -9,13 +9,14 @@ from src.data_loader import load_incidents
 
 class TestFindingSources(unittest.TestCase):
 
+
  def setUp(self):
     self.incidents = load_incidents()
 
  def test_retrieve_finding_and_source(self):
     result = get_finding_sources(
         self.incidents, "TEST-001", "FIND-001"
-    )
+)
 
     self.assertIsNotNone(result)
     self.assertEqual(
@@ -54,7 +55,7 @@ class TestFindingSources(unittest.TestCase):
     self.assertEqual(
         report, "Finding or incident not found."
     )
-
+ 
  def test_format_report_without_sources(self):
     result = {
         "finding": {
@@ -158,7 +159,34 @@ class TestFindingSources(unittest.TestCase):
         "Multiple sources and publishers represented",
         report,
     )
+    self.assertIn("Evidence Level:", report)
+    self.assertIn("Further Review Needed:", report)
 
+ def test_evidence_quality_flags_missing_sources(self):
+    result = {"sources": []}
+
+    analysis = analyze_evidence_quality(result)
+
+    self.assertEqual(
+        analysis["evidence_level"],
+        "No Evidence Linked",
+    )
+    self.assertTrue(analysis["needs_review"])
+
+ def test_evidence_quality_flags_limited_coverage(self):
+    result = {
+        "sources": [
+            {"publisher": "Microsoft"},
+        ]
+    }
+
+    analysis = analyze_evidence_quality(result)
+
+    self.assertEqual(
+        analysis["evidence_level"],
+        "Limited",
+    )
+    self.assertTrue(analysis["needs_review"])
 
 if __name__ == "__main__":
     unittest.main()

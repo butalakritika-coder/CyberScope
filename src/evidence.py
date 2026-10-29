@@ -27,7 +27,7 @@ def get_finding_sources(incidents, incident_id, finding_id):
     return None
 
 def analyze_evidence_quality(result):
-    """Summarize the source coverage for a finding."""
+    """Summarize source coverage and identify evidence gaps."""
 
     if result is None:
         return None
@@ -45,18 +45,34 @@ def analyze_evidence_quality(result):
 
     if source_count == 0:
         assessment = "No linked sources available"
+        evidence_level = "No Evidence Linked"
+        needs_review = True
+
     elif source_count == 1:
         assessment = "Limited source coverage: only one source linked"
+        evidence_level = "Limited"
+        needs_review = True
+
     elif publisher_count == 1:
-        assessment = "Multiple sources linked, but only one publisher represented"
+        assessment = (
+            "Multiple sources linked, but only one publisher represented"
+        )
+        evidence_level = "Limited Publisher Diversity"
+        needs_review = True
+
     else:
         assessment = "Multiple sources and publishers represented"
+        evidence_level = "Multiple Publishers"
+        needs_review = False
 
     return {
         "source_count": source_count,
         "publisher_count": publisher_count,
         "assessment": assessment,
+        "evidence_level": evidence_level,
+        "needs_review": needs_review,
     }
+
 def format_evidence_report(result):
     """Format a finding and its sources into a readable report."""
 
@@ -81,12 +97,13 @@ def format_evidence_report(result):
         finding["claim"],
         "",
         f"Evidence Status: {finding['evidence_status'].replace('_', ' ').title()}",
-        "",
+         "",
         "Evidence Quality Analysis:",
-        f"Linked Sources: {quality['source_count']}",
-        f"Distinct Publishers: {quality['publisher_count']}",
-        f"Assessment: {quality['assessment']}",
-        "",
+f"Linked Sources: {quality['source_count']}",
+f"Distinct Publishers: {quality['publisher_count']}",
+f"Evidence Level: {quality['evidence_level']}",
+f"Assessment: {quality['assessment']}",
+f"Further Review Needed: {'Yes' if quality['needs_review'] else 'No'}",
         "Associated Sources:",
     ]
 
