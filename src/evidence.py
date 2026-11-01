@@ -120,7 +120,83 @@ f"Further Review Needed: {'Yes' if quality['needs_review'] else 'No'}",
 
     return "\n".join(lines)
 
+def get_incident_techniques(incidents, incident_id):
+    """Retrieve MITRE ATT&CK techniques for a specific incident."""
 
+    for incident in incidents:
+        if incident.get("incident_id") == incident_id:
+            return incident.get("techniques", [])
+
+    return None
+def compare_incident_techniques(incidents, incident_id_1, incident_id_2):
+    """Compare MITRE ATT&CK techniques between two incidents."""
+
+    techniques_1 = get_incident_techniques(incidents, incident_id_1)
+    techniques_2 = get_incident_techniques(incidents, incident_id_2)
+
+    if techniques_1 is None or techniques_2 is None:
+        return None
+
+    ids_1 = {technique["technique_id"] for technique in techniques_1}
+    ids_2 = {technique["technique_id"] for technique in techniques_2}
+
+    return {
+        "common_techniques": ids_1 & ids_2,
+        "unique_to_first": ids_1 - ids_2,
+        "unique_to_second": ids_2 - ids_1
+    }
+def format_technique_comparison(incidents, incident_id_1, incident_id_2):
+    """Format a readable comparison report for two incidents."""
+
+    result = compare_incident_techniques(
+        incidents, incident_id_1, incident_id_2
+    )
+
+    if result is None:
+        return "One or both incidents not found."
+
+    def get_technique_details(incident_id, technique_ids):
+        techniques = get_incident_techniques(incidents, incident_id)
+
+        return [
+            f"{technique['technique_id']} - {technique['name']}"
+            for technique in techniques
+            if technique["technique_id"] in technique_ids
+        ]
+
+    lines = [
+        "=" * 55,
+        "       CYBERSCOPE INCIDENT TECHNIQUE COMPARISON",
+        "=" * 55,
+        "",
+        "Common Techniques:",
+    ]
+
+    common = get_technique_details(
+        incident_id_1, result["common_techniques"]
+    )
+
+    lines.extend(common if common else ["None"])
+
+    lines.extend(["", "Unique to First Incident:"])
+
+    unique_first = get_technique_details(
+        incident_id_1, result["unique_to_first"]
+    )
+
+    lines.extend(unique_first if unique_first else ["None"])
+
+    lines.extend(["", "Unique to Second Incident:"])
+
+    unique_second = get_technique_details(
+        incident_id_2, result["unique_to_second"]
+    )
+
+    lines.extend(unique_second if unique_second else ["None"])
+
+    lines.append("=" * 55)
+
+    return "\n".join(lines)
 def main():
     """Run an interactive evidence lookup."""
     from src.data_loader import load_incidents
