@@ -1057,6 +1057,10 @@ elif page == "Finding Analysis":
 # EVIDENCE ANALYSIS
 # ============================================
 
+# ============================================
+# EVIDENCE ANALYSIS
+# ============================================
+
 elif page == "Evidence Analysis":
 
     st.markdown(
@@ -1066,11 +1070,232 @@ elif page == "Evidence Analysis":
 
     st.markdown("""
     <div class="description">
-        Evaluate source coverage, publisher diversity, and evidence gaps.
+        Evaluate source coverage, publisher diversity, and evidence gaps
+        across documented cybersecurity incidents.
     </div>
     """, unsafe_allow_html=True)
 
-    st.info("Evidence analysis workspace is under development.")
+    try:
+        incidents = load_incidents()
+    except ValueError as error:
+        st.error(f"Unable to load incident data: {error}")
+        st.stop()
+
+    if not incidents:
+
+        st.warning("No incident records are available.")
+
+    else:
+
+        st.markdown("### Select an Incident")
+
+        incident_options = {
+            f"{incident.get('name', 'Unnamed Incident')} "
+            f"({incident.get('incident_id', 'Unknown')})": incident
+            for incident in incidents
+        }
+
+        selected_label = st.selectbox(
+            "Choose an incident",
+            options=list(incident_options.keys()),
+            key="evidence_analysis_incident"
+        )
+
+        selected_incident = incident_options[selected_label]
+
+        findings = selected_incident.get("findings", [])
+        incident_id = selected_incident.get("incident_id")
+
+        st.divider()
+
+        if not findings:
+
+            st.info("No findings are recorded for this incident.")
+
+        else:
+
+            analysis_results = []
+
+            for finding in findings:
+
+                result = get_finding_sources(
+                    incidents,
+                    incident_id,
+                    finding.get("finding_id")
+                )
+
+                if result is None:
+                    continue
+
+                quality = analyze_evidence_quality(result)
+
+                analysis_results.append({
+                    "finding": finding,
+                    "result": result,
+                    "quality": quality
+                })
+
+            total_findings = len(analysis_results)
+
+            supported = sum(
+                1 for item in analysis_results
+                if item["finding"].get("evidence_status") == "supported"
+            )
+
+            unverified = sum(
+                1 for item in analysis_results
+                if item["finding"].get("evidence_status") == "unverified"
+            )
+
+            disputed = sum(
+                1 for item in analysis_results
+                if item["finding"].get("evidence_status") == "disputed"
+            )
+
+            review_required = sum(
+                1 for item in analysis_results
+                if item["quality"]["needs_review"]
+            )
+
+            st.markdown("### Evidence Overview")
+
+            col1, col2, col3, col4 = st.columns(4)
+
+            col1.metric("Total Findings", total_findings)
+            col2.metric("Supported", supported)
+            col3.metric("Unverified", unverified)
+            col4.metric("Review Required", review_required)
+
+            st.divider()
+
+            st.markdown("### Evidence Status Distribution")
+
+            status_data = {
+                "Supported": supported,
+                "Unverified": unverified,
+                "Disputed": disputed,
+                "Insufficient Evidence": sum(
+                    1 for item in analysis_results
+                    if item["finding"].get("evidence_status")
+                    == "insufficient_evidence"
+                )
+            }
+
+            st.bar_chart(status_data)
+
+            st.divider()
+
+            st.markdown("### Finding-wise Evidence Coverage")
+
+            table_data = []
+
+            for item in analysis_results:
+
+                finding = item["finding"]
+                quality = item["quality"]
+
+                table_data.append({
+                    "Finding ID": finding.get("finding_id"),
+                    "Evidence Status": finding.get(
+                        "evidence_status", "unknown"
+                    ).replace("_", " ").title(),
+                    "Linked Sources": quality["source_count"],
+                    "Distinct Publishers": quality["publisher_count"],
+                    "Evidence Level": quality["evidence_level"],
+                    "Review Required": (
+                        "Yes" if quality["needs_review"] else "No"
+                    )
+                })
+
+            st.dataframe(
+                table_data,
+                use_container_width=True,
+                hide_index=True
+            )
+
+            st.divider()
+
+            st.markdown("### Publisher Diversity")
+
+            for item in analysis_results:
+
+                finding = item["finding"]
+                quality = item["quality"]
+
+                with st.expander(
+                    f"{finding.get('finding_id')} — "
+                    f"{quality['publisher_count']} publisher(s)"
+                ):
+
+                    st.write(finding.get("claim", "No claim available"))
+
+                    st.write(
+                        f"**Assessment:** {quality['assessment']}"
+                    )
+
+                    publishers = sorted({
+                        source.get("publisher", "Unknown")
+                        for source in item["result"].get("sources", [])
+                    })
+
+                    if publishers:
+
+                        st.write("**Associated publishers:**")
+
+                        for publisher in publishers:
+                            st.write(f"- {publisher}")
+
+                    else:
+
+                        st.warning("No publishers are linked to this finding.")
+
+            st.divider()
+
+            st.markdown("### Findings Requiring Further Review")
+
+            flagged_findings = [
+                item for item in analysis_results
+                if item["quality"]["needs_review"]
+            ]
+
+            if flagged_findings:
+
+                st.warning(
+                    f"{len(flagged_findings)} finding(s) "
+                    "require additional evidence review."
+                )
+
+                for item in flagged_findings:
+
+                    finding = item["finding"]
+                    quality = item["quality"]
+
+                    with st.expander(
+                        f"{finding.get('finding_id')} — Review Required"
+                    ):
+
+                        st.write(finding.get("claim", "No claim available"))
+
+                        st.write(
+                            f"**Evidence Status:** "
+                            f"{finding.get('evidence_status', 'unknown')}"
+                        )
+
+                        st.write(
+                            f"**Linked Sources:** "
+                            f"{quality['source_count']}"
+                        )
+
+                        st.write(
+                            f"**Assessment:** {quality['assessment']}"
+                        )
+
+            else:
+
+                st.success(
+                    "No findings have been flagged for further review "
+                    "by the current evidence quality checks."
+                )
     
 # ============================================
 # INCIDENT COMPARISON
