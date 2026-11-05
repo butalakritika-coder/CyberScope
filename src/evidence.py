@@ -26,6 +26,7 @@ def get_finding_sources(incidents, incident_id, finding_id):
 
     return None
 
+
 def analyze_evidence_quality(result):
     """Summarize source coverage and identify evidence gaps."""
 
@@ -73,6 +74,7 @@ def analyze_evidence_quality(result):
         "needs_review": needs_review,
     }
 
+
 def format_evidence_report(result):
     """Format a finding and its sources into a readable report."""
 
@@ -97,13 +99,13 @@ def format_evidence_report(result):
         finding["claim"],
         "",
         f"Evidence Status: {finding['evidence_status'].replace('_', ' ').title()}",
-         "",
+        "",
         "Evidence Quality Analysis:",
-f"Linked Sources: {quality['source_count']}",
-f"Distinct Publishers: {quality['publisher_count']}",
-f"Evidence Level: {quality['evidence_level']}",
-f"Assessment: {quality['assessment']}",
-f"Further Review Needed: {'Yes' if quality['needs_review'] else 'No'}",
+        f"Linked Sources: {quality['source_count']}",
+        f"Distinct Publishers: {quality['publisher_count']}",
+        f"Evidence Level: {quality['evidence_level']}",
+        f"Assessment: {quality['assessment']}",
+        f"Further Review Needed: {'Yes' if quality['needs_review'] else 'No'}",
         "Associated Sources:",
     ]
 
@@ -120,6 +122,7 @@ f"Further Review Needed: {'Yes' if quality['needs_review'] else 'No'}",
 
     return "\n".join(lines)
 
+
 def get_incident_techniques(incidents, incident_id):
     """Retrieve MITRE ATT&CK techniques for a specific incident."""
 
@@ -128,6 +131,8 @@ def get_incident_techniques(incidents, incident_id):
             return incident.get("techniques", [])
 
     return None
+
+
 def compare_incident_techniques(incidents, incident_id_1, incident_id_2):
     """Compare MITRE ATT&CK techniques between two incidents."""
 
@@ -145,6 +150,8 @@ def compare_incident_techniques(incidents, incident_id_1, incident_id_2):
         "unique_to_first": ids_1 - ids_2,
         "unique_to_second": ids_2 - ids_1
     }
+
+
 def format_technique_comparison(incidents, incident_id_1, incident_id_2):
     """Format a readable comparison report for two incidents."""
 
@@ -165,9 +172,7 @@ def format_technique_comparison(incidents, incident_id_1, incident_id_2):
         ]
 
     lines = [
-        "=" * 55,
-        "       CYBERSCOPE INCIDENT TECHNIQUE COMPARISON",
-        "=" * 55,
+        "CYBERSCOPE INCIDENT TECHNIQUE COMPARISON",
         "",
         "Common Techniques:",
     ]
@@ -194,11 +199,12 @@ def format_technique_comparison(incidents, incident_id_1, incident_id_2):
 
     lines.extend(unique_second if unique_second else ["None"])
 
-    lines.append("=" * 55)
-
     return "\n".join(lines)
+
+
 def main():
     """Run an interactive evidence lookup."""
+
     from src.data_loader import load_incidents
 
     try:

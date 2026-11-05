@@ -6,6 +6,9 @@ from src.evidence import (
     get_finding_sources,
     analyze_evidence_quality,
     format_evidence_report,
+    get_incident_techniques,
+    compare_incident_techniques,
+    format_technique_comparison,
 )
 
 
@@ -440,15 +443,16 @@ with st.sidebar:
     st.markdown("### WORKSPACE")
 
     page = st.radio(
-        "Navigation",
-        [
-            "Overview",
-            "Incident Explorer",
-            "Finding Analysis",
-            "Evidence Analysis"
-        ],
-        label_visibility="collapsed"
-    )
+    "Navigation",
+    [
+        "Overview",
+        "Incident Explorer",
+        "Finding Analysis",
+        "Evidence Analysis",
+        "Incident Comparison"
+    ],
+    label_visibility="collapsed"
+)
 
     st.divider()
 
@@ -1067,3 +1071,116 @@ elif page == "Evidence Analysis":
     """, unsafe_allow_html=True)
 
     st.info("Evidence analysis workspace is under development.")
+    
+# ============================================
+# INCIDENT COMPARISON
+# ============================================
+
+elif page == "Incident Comparison":
+
+    st.markdown(
+        '<div class="main-heading">Incident Comparison</div>',
+        unsafe_allow_html=True
+    )
+
+    st.markdown("""
+    <div class="description">
+        Compare cybersecurity incidents based on their MITRE ATT&CK
+        techniques and identify shared and unique attack techniques.
+    </div>
+    """, unsafe_allow_html=True)
+
+    try:
+        incidents = load_incidents()
+    except ValueError as error:
+        st.error(f"Unable to load incident data: {error}")
+        st.stop()
+
+    # Select incidents that have recorded techniques.
+    incident_options = {
+        f"{incident.get('name', 'Unnamed Incident')} "
+        f"({incident.get('incident_id', 'Unknown')})":
+        incident.get("incident_id")
+        for incident in incidents
+        if incident.get("techniques")
+    }
+
+    if len(incident_options) < 2:
+        st.info(
+            "At least two incidents with recorded MITRE ATT&CK "
+            "techniques are needed for comparison."
+        )
+
+    else:
+        st.markdown("### Select Incidents")
+
+        col1, col2 = st.columns(2)
+
+        labels = list(incident_options.keys())
+
+        with col1:
+            first_incident = st.selectbox(
+                "First Incident",
+                labels,
+                key="comparison_first"
+            )
+
+        with col2:
+            second_options = [
+                label for label in labels
+                if label != first_incident
+            ]
+
+            second_incident = st.selectbox(
+                "Second Incident",
+                second_options,
+                key="comparison_second"
+            )
+
+        st.write("")
+
+        if st.button("Compare Incidents", use_container_width=True):
+
+            first_id = incident_options[first_incident]
+            second_id = incident_options[second_incident]
+
+            result = compare_incident_techniques(
+                incidents,
+                first_id,
+                second_id
+            )
+
+            if result is None:
+                st.error("Unable to compare the selected incidents.")
+
+            else:
+                st.divider()
+
+                st.markdown("### Comparison Results")
+
+                common = result["common_techniques"]
+                unique_first = result["unique_to_first"]
+                unique_second = result["unique_to_second"]
+
+                metric1, metric2, metric3 = st.columns(3)
+
+                metric1.metric("Common Techniques", len(common))
+                metric2.metric("Unique to First", len(unique_first))
+                metric3.metric("Unique to Second", len(unique_second))
+
+                report = format_technique_comparison(
+                    incidents,
+                    first_id,
+                    second_id
+                )
+
+                st.markdown("### Detailed Comparison")
+
+                st.code(report, language=None)
+
+                st.download_button(
+                    "Download Comparison Report",
+                    data=report,
+                    file_name="incident_comparison_report.txt",
+                    mime="text/plain"
+                )
