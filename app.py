@@ -1300,7 +1300,259 @@ elif page == "Evidence Analysis":
 # ============================================
 # INCIDENT COMPARISON
 # ============================================
+    # =========================================================
+    # GLOBAL EVIDENCE ANALYTICS
+    # =========================================================
 
+elif page == "Global Evidence Analytics":
+
+        st.title("Global Evidence Analytics")
+
+        st.markdown(
+            "A platform-wide overview of evidence coverage, "
+            "source diversity, and findings that may require review."
+        )
+
+        # Load all incidents
+        incidents = load_incidents()
+
+        # -----------------------------------------------------
+        # COLLECT GLOBAL EVIDENCE DATA
+        # -----------------------------------------------------
+
+        total_incidents = len(incidents)
+
+        total_findings = 0
+        supported_findings = 0
+        unverified_findings = 0
+        disputed_findings = 0
+        insufficient_findings = 0
+
+        all_source_ids = set()
+        all_publishers = set()
+
+        review_findings = []
+        incident_review_counts = []
+
+        status_counts = {
+            "Supported": 0,
+            "Unverified": 0,
+            "Disputed": 0,
+            "Insufficient Evidence": 0
+        }
+
+        # Process every incident
+        for incident in incidents:
+
+            incident_findings = incident.get("findings", [])
+            incident_sources = incident.get("sources", [])
+
+            source_lookup = {
+                source.get("source_id"): source
+                for source in incident_sources
+            }
+
+            incident_review_count = 0
+
+            for finding in incident_findings:
+
+                total_findings += 1
+
+                status = finding.get(
+                    "evidence_status",
+                    "unverified"
+                )
+
+                status = status.lower()
+
+                source_ids = finding.get("source_ids", [])
+
+                # Count evidence status
+                if status == "supported":
+                    supported_findings += 1
+                    status_counts["Supported"] += 1
+
+                elif status == "unverified":
+                    unverified_findings += 1
+                    status_counts["Unverified"] += 1
+
+                elif status == "disputed":
+                    disputed_findings += 1
+                    status_counts["Disputed"] += 1
+
+                elif status == "insufficient_evidence":
+                    insufficient_findings += 1
+                    status_counts["Insufficient Evidence"] += 1
+
+                # Collect linked sources and publishers
+                linked_publishers = set()
+
+                for source_id in source_ids:
+
+                    source = source_lookup.get(source_id)
+
+                    if source:
+
+                        all_source_ids.add(source_id)
+
+                        publisher = source.get("publisher")
+
+                        if publisher:
+                            all_publishers.add(publisher)
+                            linked_publishers.add(publisher)
+
+                # Identify findings that need review
+                needs_review = (
+                    status in [
+                        "unverified",
+                        "disputed",
+                        "insufficient_evidence"
+                    ]
+                    or len(source_ids) == 0
+                )
+
+                if needs_review:
+
+                    incident_review_count += 1
+
+                    review_findings.append({
+                        "Incident": incident.get("name", "Unknown"),
+                        "Finding ID": finding.get("finding_id", "N/A"),
+                        "Claim": finding.get("claim", "N/A"),
+                        "Evidence Status": status.replace(
+                            "_", " "
+                        ).title(),
+                        "Linked Sources": len(source_ids),
+                        "Distinct Publishers": len(linked_publishers)
+                    })
+
+            incident_review_counts.append({
+                "Incident": incident.get("name", "Unknown"),
+                "Findings Requiring Review": incident_review_count
+            })
+
+        # -----------------------------------------------------
+        # GLOBAL METRICS
+        # -----------------------------------------------------
+
+        st.subheader("Platform-wide Overview")
+
+        col1, col2, col3, col4 = st.columns(4)
+
+        col1.metric("Total Incidents", total_incidents)
+        col2.metric("Total Findings", total_findings)
+        col3.metric("Linked Sources", len(all_source_ids))
+        col4.metric("Unique Publishers", len(all_publishers))
+
+        st.divider()
+
+        # -----------------------------------------------------
+        # EVIDENCE STATUS DISTRIBUTION
+        # -----------------------------------------------------
+
+        st.subheader("Evidence Status Distribution")
+
+        col1, col2, col3, col4 = st.columns(4)
+
+        col1.metric("Supported", supported_findings)
+        col2.metric("Unverified", unverified_findings)
+        col3.metric("Disputed", disputed_findings)
+        col4.metric("Insufficient Evidence", insufficient_findings)
+
+        st.markdown("#### Findings by Evidence Status")
+
+        st.bar_chart(status_counts)
+
+        st.caption(
+            "This chart represents the evidence status labels "
+            "assigned to findings in the dataset."
+        )
+
+        st.divider()
+
+        # -----------------------------------------------------
+        # EVIDENCE GAPS
+        # -----------------------------------------------------
+
+        st.subheader("Evidence Gaps Across Incidents")
+
+        st.markdown(
+            "The following findings are flagged for review because "
+            "they are unverified, disputed, have insufficient evidence, "
+            "or have no linked sources."
+        )
+
+        if review_findings:
+
+            st.metric(
+                "Total Findings Requiring Review",
+                len(review_findings)
+            )
+
+            st.dataframe(
+                review_findings,
+                use_container_width=True,
+                hide_index=True
+            )
+
+        else:
+
+            st.success("No findings currently require review.")
+
+        st.divider()
+
+        # -----------------------------------------------------
+        # INCIDENT-WISE REVIEW SUMMARY
+        # -----------------------------------------------------
+
+        st.subheader("Incidents Requiring the Most Review")
+
+        incident_review_counts.sort(
+            key=lambda item: item["Findings Requiring Review"],
+            reverse=True
+        )
+
+        st.dataframe(
+            incident_review_counts,
+            use_container_width=True,
+            hide_index=True
+        )
+
+        st.divider()
+
+        # -----------------------------------------------------
+        # PUBLISHER DIVERSITY
+        # -----------------------------------------------------
+
+        st.subheader("Source Publisher Overview")
+
+        st.metric(
+            "Total Unique Publishers",
+            len(all_publishers)
+        )
+
+        if all_publishers:
+
+            st.markdown("#### Publishers in the Dataset")
+
+            for publisher in sorted(all_publishers):
+                st.write(f"• {publisher}")
+
+        else:
+
+            st.info("No publishers found in the current dataset.")
+
+        # -----------------------------------------------------
+        # IMPORTANT NOTE
+        # -----------------------------------------------------
+
+        st.info(
+            "Note: These analytics describe evidence coverage and "
+            "dataset status labels. A higher source count or publisher "
+            "count does not automatically establish that a finding "
+            "is accurate. Findings should still be reviewed against "
+            "their original sources."
+        )
 elif page == "Incident Comparison":
 
     st.markdown(
