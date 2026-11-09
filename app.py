@@ -451,6 +451,7 @@ with st.sidebar:
         "Evidence Analysis",
         "Global Evidence Analytics",
         "Incident Trends & Insights",
+        "MITRE ATT&CK Technique Explorer",
         "Incident Comparison"
     ],
     label_visibility="collapsed"
@@ -1851,6 +1852,233 @@ elif page == "Incident Trends & Insights":
             "not the prevalence of techniques across all real-world "
             "cyberattacks."
         )
+# =========================================================
+# MITRE ATT&CK TECHNIQUE EXPLORER
+# =========================================================
+
+elif page == "MITRE ATT&CK Technique Explorer":
+
+    st.markdown(
+        '<div class="main-heading">MITRE ATT&CK Technique Explorer</div>',
+        unsafe_allow_html=True
+    )
+
+    st.markdown("""
+    <div class="description">
+        Explore recorded MITRE ATT&CK techniques, identify associated
+        incidents, and examine their supporting source references.
+    </div>
+    """, unsafe_allow_html=True)
+
+    try:
+        incidents = load_incidents()
+    except ValueError as error:
+        st.error(f"Unable to load incident data: {error}")
+        st.stop()
+
+    # -----------------------------------------------------
+    # COLLECT TECHNIQUES AND THEIR ASSOCIATED DATA
+    # -----------------------------------------------------
+
+    technique_library = {}
+
+    for incident in incidents:
+
+        incident_name = incident.get("name", "Unknown")
+        incident_id = incident.get("incident_id", "Unknown")
+
+        sources = incident.get("sources", [])
+
+        source_lookup = {
+            source.get("source_id"): source
+            for source in sources
+        }
+
+        for technique in incident.get("techniques", []):
+
+            technique_id = technique.get("technique_id", "Unknown")
+            technique_name = technique.get("name", "Unknown")
+
+            if technique_id not in technique_library:
+
+                technique_library[technique_id] = {
+                    "name": technique_name,
+                    "incidents": [],
+                    "sources": {}
+                }
+
+            entry = technique_library[technique_id]
+
+            if incident_id not in [
+                item["incident_id"] for item in entry["incidents"]
+            ]:
+
+                entry["incidents"].append({
+                    "incident_id": incident_id,
+                    "incident_name": incident_name
+                })
+
+            for source_id in technique.get("source_ids", []):
+
+                source = source_lookup.get(source_id)
+
+                if source:
+                    entry["sources"][source_id] = source
+
+    # -----------------------------------------------------
+    # TECHNIQUE OVERVIEW
+    # -----------------------------------------------------
+
+    total_techniques = len(technique_library)
+
+    total_associations = sum(
+        len(item["incidents"])
+        for item in technique_library.values()
+    )
+
+    total_sources = len({
+        source_id
+        for item in technique_library.values()
+        for source_id in item["sources"]
+    })
+
+    st.subheader("Technique Library Overview")
+
+    col1, col2, col3 = st.columns(3)
+
+    col1.metric("Unique Techniques", total_techniques)
+    col2.metric("Incident Associations", total_associations)
+    col3.metric("Linked Sources", total_sources)
+
+    st.divider()
+
+    # -----------------------------------------------------
+    # SEARCH TECHNIQUES
+    # -----------------------------------------------------
+
+    st.subheader("Search Techniques")
+
+    search_query = st.text_input(
+        "Search by technique ID or name",
+        placeholder="Try T1210 or Exploitation of Remote Services..."
+    )
+
+    filtered_techniques = {}
+
+    for technique_id, details in technique_library.items():
+
+        searchable_text = (
+            technique_id + " " + details["name"]
+        ).lower()
+
+        if search_query.lower().strip() in searchable_text:
+
+            filtered_techniques[technique_id] = details
+
+    st.caption(
+        f"{len(filtered_techniques)} technique(s) found"
+    )
+
+    st.divider()
+
+    # -----------------------------------------------------
+    # TECHNIQUE LIBRARY
+    # -----------------------------------------------------
+
+    st.subheader("Recorded MITRE ATT&CK Techniques")
+
+    if not filtered_techniques:
+
+        st.info("No matching techniques found.")
+
+    else:
+
+        for technique_id, details in sorted(
+            filtered_techniques.items()
+        ):
+
+            with st.expander(
+                f"{technique_id} — {details['name']}"
+            ):
+
+                # Technique details
+                st.markdown("#### Technique Details")
+
+                col1, col2 = st.columns(2)
+
+                col1.metric("Technique ID", technique_id)
+
+                col2.metric(
+                    "Associated Incidents",
+                    len(details["incidents"])
+                )
+
+                st.write(
+                    f"**Technique Name:** {details['name']}"
+                )
+
+                st.divider()
+
+                # Associated incidents
+                st.markdown("#### Associated Incidents")
+
+                if details["incidents"]:
+
+                    for incident in details["incidents"]:
+
+                        st.write(
+                            f"• {incident['incident_name']} "
+                            f"({incident['incident_id']})"
+                        )
+
+                else:
+
+                    st.caption("No associated incidents found.")
+
+                st.divider()
+
+                # Supporting sources
+                st.markdown("#### Supporting Source References")
+
+                if details["sources"]:
+
+                    for index, source in enumerate(
+                        details["sources"].values(),
+                        start=1
+                    ):
+
+                        st.markdown(
+                            f"**{index}. {source.get('title', 'Untitled source')}**"
+                        )
+
+                        st.caption(
+                            f"{source.get('publisher', 'Unknown publisher')} "
+                            f"· {source.get('source_type', 'Unknown type')}"
+                        )
+
+                        source_url = source.get("url", "")
+
+                        if source_url.startswith(("https://", "http://")):
+
+                            st.link_button(
+                                "Open Source",
+                                source_url,
+                                key=f"technique_source_{technique_id}_{index}"
+                            )
+
+                else:
+
+                    st.info(
+                        "No supporting source references are linked "
+                        "to this technique."
+                    )
+
+                st.divider()
+
+                st.caption(
+                    "Technique associations are based on the "
+                    "MITRE ATT&CK mappings recorded in CyberScope."
+                )
 elif page == "Incident Comparison":
 
     st.markdown(
