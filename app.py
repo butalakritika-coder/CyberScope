@@ -1,5 +1,5 @@
 import streamlit as st
-
+from collections import Counter
 from src.data_loader import load_incidents
 from src.search import search_incidents
 from src.evidence import (
@@ -444,11 +444,13 @@ with st.sidebar:
 
     page = st.radio(
     "Navigation",
-    [
+        [
         "Overview",
         "Incident Explorer",
         "Finding Analysis",
         "Evidence Analysis",
+        "Global Evidence Analytics",
+        "Incident Trends & Insights",
         "Incident Comparison"
     ],
     label_visibility="collapsed"
@@ -1552,6 +1554,302 @@ elif page == "Global Evidence Analytics":
             "count does not automatically establish that a finding "
             "is accurate. Findings should still be reviewed against "
             "their original sources."
+        )
+# =========================================================
+# INCIDENT TRENDS & INSIGHTS
+# =========================================================
+
+elif page == "Incident Trends & Insights":
+
+    st.markdown(
+        '<div class="main-heading">Incident Trends & Insights</div>',
+        unsafe_allow_html=True
+    )
+
+    st.markdown("""
+    <div class="description">
+        Explore patterns across documented cyber incidents,
+        examine frequently recorded attack techniques,
+        and identify interesting trends in the dataset.
+    </div>
+    """, unsafe_allow_html=True)
+
+    try:
+        incidents = load_incidents()
+    except ValueError as error:
+        st.error(f"Unable to load incident data: {error}")
+        st.stop()
+
+    if not incidents:
+
+        st.warning("No incident records are available.")
+
+    else:
+
+        # -------------------------------------------------
+        # COLLECT DATA
+        # -------------------------------------------------
+
+        category_counts = Counter()
+        technique_counts = Counter()
+        technique_incidents = {}
+
+        findings_per_incident = []
+
+        for incident in incidents:
+
+            incident_name = incident.get("name", "Unknown")
+            category = incident.get("category", "Unknown")
+
+            findings = incident.get("findings", [])
+            techniques = incident.get("techniques", [])
+
+            # Count incident categories
+            category_counts[category] += 1
+
+            # Count findings per incident
+            findings_per_incident.append({
+                "Incident": incident_name,
+                "Number of Findings": len(findings)
+            })
+
+            # Count MITRE techniques
+            for technique in techniques:
+
+                technique_id = technique.get(
+                    "technique_id", "Unknown"
+                )
+
+                technique_name = technique.get(
+                    "name", "Unknown"
+                )
+
+                technique_label = (
+                    f"{technique_id} - {technique_name}"
+                )
+
+                technique_counts[technique_label] += 1
+
+                if technique_label not in technique_incidents:
+                    technique_incidents[technique_label] = set()
+
+                technique_incidents[technique_label].add(
+                    incident_name
+                )
+
+        # -------------------------------------------------
+        # OVERVIEW METRICS
+        # -------------------------------------------------
+
+        total_incidents = len(incidents)
+
+        total_findings = sum(
+            len(incident.get("findings", []))
+            for incident in incidents
+        )
+
+        total_techniques = sum(
+            len(incident.get("techniques", []))
+            for incident in incidents
+        )
+
+        unique_techniques = len(technique_counts)
+
+        st.subheader("Dataset Overview")
+
+        col1, col2, col3, col4 = st.columns(4)
+
+        col1.metric("Total Incidents", total_incidents)
+        col2.metric("Total Findings", total_findings)
+        col3.metric("Technique Records", total_techniques)
+        col4.metric("Unique Techniques", unique_techniques)
+
+        st.divider()
+
+        # -------------------------------------------------
+        # INCIDENT CATEGORY DISTRIBUTION
+        # -------------------------------------------------
+
+        st.subheader("Incident Category Distribution")
+
+        st.caption(
+            "Distribution of documented incidents according "
+            "to their recorded categories."
+        )
+
+        if category_counts:
+
+            st.bar_chart(dict(category_counts))
+
+        else:
+
+            st.info("No incident categories are available.")
+
+        st.divider()
+
+        # -------------------------------------------------
+        # FINDINGS PER INCIDENT
+        # -------------------------------------------------
+
+        st.subheader("Findings Across Incidents")
+
+        st.caption(
+            "Compare the number of recorded findings "
+            "associated with each incident."
+        )
+
+        st.bar_chart(
+            {
+                item["Incident"]: item["Number of Findings"]
+                for item in findings_per_incident
+            }
+        )
+
+        st.dataframe(
+            findings_per_incident,
+            use_container_width=True,
+            hide_index=True
+        )
+
+        st.divider()
+
+        # -------------------------------------------------
+        # MITRE ATT&CK TECHNIQUE FREQUENCY
+        # -------------------------------------------------
+
+        st.subheader("MITRE ATT&CK Technique Frequency")
+
+        st.caption(
+            "Techniques are counted according to their recorded "
+            "occurrences in the incident dataset."
+        )
+
+        if technique_counts:
+
+            sorted_techniques = dict(
+                sorted(
+                    technique_counts.items(),
+                    key=lambda item: item[1],
+                    reverse=True
+                )
+            )
+
+            st.bar_chart(sorted_techniques)
+
+            technique_table = []
+
+            for technique, count in sorted_techniques.items():
+
+                technique_table.append({
+                    "Technique": technique,
+                    "Occurrences": count,
+                    "Incidents Associated": len(
+                        technique_incidents[technique]
+                    )
+                })
+
+            st.dataframe(
+                technique_table,
+                use_container_width=True,
+                hide_index=True
+            )
+
+        else:
+
+            st.info("No MITRE ATT&CK techniques are recorded.")
+
+        st.divider()
+
+        # -------------------------------------------------
+        # TECHNIQUE OVERLAP
+        # -------------------------------------------------
+
+        st.subheader("Techniques Shared Across Incidents")
+
+        shared_techniques = {
+            technique: names
+            for technique, names in technique_incidents.items()
+            if len(names) > 1
+        }
+
+        if shared_techniques:
+
+            for technique, names in shared_techniques.items():
+
+                with st.expander(technique):
+
+                    st.write(
+                        "**Recorded in the following incidents:**"
+                    )
+
+                    for name in sorted(names):
+                        st.write(f"- {name}")
+
+        else:
+
+            st.info(
+                "No techniques are currently shared across "
+                "multiple incidents."
+            )
+
+        st.divider()
+
+        # -------------------------------------------------
+        # AUTOMATIC DATASET INSIGHTS
+        # -------------------------------------------------
+
+        st.subheader("Key Dataset Insights")
+
+        # Most common category
+        if category_counts:
+
+            most_common_category = category_counts.most_common(1)[0]
+
+            st.write(
+                f"**1. Most represented incident category:** "
+                f"{most_common_category[0]} "
+                f"({most_common_category[1]} incident(s))."
+            )
+
+        # Incident with most findings
+        if findings_per_incident:
+
+            highest_findings = max(
+                findings_per_incident,
+                key=lambda item: item["Number of Findings"]
+            )
+
+            st.write(
+                f"**2. Incident with the most findings:** "
+                f"{highest_findings['Incident']} "
+                f"({highest_findings['Number of Findings']} findings)."
+            )
+
+        # Most frequent technique
+        if technique_counts:
+
+            most_common_technique = technique_counts.most_common(1)[0]
+
+            st.write(
+                f"**3. Most frequently recorded technique:** "
+                f"{most_common_technique[0]} "
+                f"({most_common_technique[1]} occurrence(s))."
+            )
+
+        # Shared techniques
+        st.write(
+            f"**4. Techniques shared across incidents:** "
+            f"{len(shared_techniques)}."
+        )
+
+        st.divider()
+
+        st.info(
+            "Note: These insights are generated from the records "
+            "currently present in the CyberScope dataset. "
+            "Technique frequency represents recorded mappings, "
+            "not the prevalence of techniques across all real-world "
+            "cyberattacks."
         )
 elif page == "Incident Comparison":
 
