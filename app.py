@@ -558,6 +558,10 @@ if page == "Overview":
 # INCIDENT EXPLORER
 # ============================================
 
+# ============================================
+# INCIDENT EXPLORER
+# ============================================
+
 elif page == "Incident Explorer":
 
     st.markdown(
@@ -567,7 +571,8 @@ elif page == "Incident Explorer":
 
     st.markdown("""
     <div class="description">
-        Search, investigate and explore documented cybersecurity incidents.
+        Search, filter and investigate documented cybersecurity incidents
+        using incident categories, evidence status and MITRE ATT&CK techniques.
     </div>
     """, unsafe_allow_html=True)
 
@@ -577,45 +582,185 @@ elif page == "Incident Explorer":
         st.error(f"Unable to load incident data: {error}")
         st.stop()
 
+    # -------------------------------------------------
+    # PREPARE FILTER OPTIONS
+    # -------------------------------------------------
+
+    categories = sorted({
+        incident.get("category", "Unknown")
+        for incident in incidents
+    })
+
+    evidence_statuses = sorted({
+        finding.get("evidence_status", "unknown")
+        for incident in incidents
+        for finding in incident.get("findings", [])
+    })
+
+    technique_options = sorted({
+        f"{technique.get('technique_id', 'Unknown')} - "
+        f"{technique.get('name', 'Unknown')}"
+        for incident in incidents
+        for technique in incident.get("techniques", [])
+    })
+
+    # -------------------------------------------------
+    # CLEAR FILTERS
+    # -------------------------------------------------
+
+    if st.button("Clear Filters", use_container_width=True):
+
+        st.session_state["incident_query"] = ""
+        st.session_state["incident_fields"] = [
+            "name", "category", "summary", "techniques"
+        ]
+        st.session_state["incident_categories"] = []
+        st.session_state["incident_statuses"] = []
+        st.session_state["incident_techniques"] = []
+
+        st.rerun()
+
+    # -------------------------------------------------
+    # KEYWORD SEARCH
+    # -------------------------------------------------
+
     st.markdown("### Search Intelligence Database")
 
     query = st.text_input(
         "Search incidents",
-        placeholder="Try WannaCry, ransomware, malware..."
+        placeholder="Try WannaCry, ransomware, malware...",
+        key="incident_query"
     )
 
     selected_fields = st.multiselect(
         "Search within",
         options=["name", "category", "summary", "techniques"],
-        default=["name", "category", "summary", "techniques"]
+        default=["name", "category", "summary", "techniques"],
+        key="incident_fields"
     )
 
-    if not selected_fields:
-        results = []
-        st.warning("Please select at least one search field.")
+    st.divider()
 
-    elif query.strip():
-        results = search_incidents(
-            incidents,
-            query,
-            fields=selected_fields
+    # -------------------------------------------------
+    # ADVANCED FILTERS
+    # -------------------------------------------------
+
+    st.markdown("### Advanced Filters")
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+
+        selected_categories = st.multiselect(
+            "Filter by Category",
+            options=categories,
+            key="incident_categories",
+            placeholder="Select incident categories"
         )
 
+        selected_statuses = st.multiselect(
+            "Filter by Evidence Status",
+            options=evidence_statuses,
+            key="incident_statuses",
+            placeholder="Select evidence statuses"
+        )
+
+    with col2:
+
+        selected_techniques = st.multiselect(
+            "Filter by MITRE ATT&CK Technique",
+            options=technique_options,
+            key="incident_techniques",
+            placeholder="Select techniques"
+        )
+
+    # -------------------------------------------------
+    # APPLY FILTERS
+    # -------------------------------------------------
+
+    if not selected_fields:
+
+        filtered_incidents = []
+        st.warning("Please select at least one search field.")
+
     else:
-        results = incidents
+
+        # First apply keyword search
+        if query.strip():
+
+            filtered_incidents = search_incidents(
+                incidents,
+                query,
+                fields=selected_fields
+            )
+
+        else:
+
+            filtered_incidents = incidents.copy()
+
+        # Apply category filter
+        if selected_categories:
+
+            filtered_incidents = [
+                incident
+                for incident in filtered_incidents
+                if incident.get("category") in selected_categories
+            ]
+
+        # Apply evidence status filter
+        if selected_statuses:
+
+            filtered_incidents = [
+                incident
+                for incident in filtered_incidents
+                if any(
+                    finding.get("evidence_status", "unknown")
+                    in selected_statuses
+                    for finding in incident.get("findings", [])
+                )
+            ]
+
+        # Apply MITRE technique filter
+        if selected_techniques:
+
+            selected_technique_ids = {
+                technique.split(" - ", 1)[0]
+                for technique in selected_techniques
+            }
+
+            filtered_incidents = [
+                incident
+                for incident in filtered_incidents
+                if any(
+                    technique.get("technique_id")
+                    in selected_technique_ids
+                    for technique in incident.get("techniques", [])
+                )
+            ]
+
+    # -------------------------------------------------
+    # SEARCH RESULTS
+    # -------------------------------------------------
 
     st.divider()
 
     st.markdown("### Search Results")
-    st.caption(f"{len(results)} incident(s) found")
 
-    if not results:
+    st.caption(
+        f"{len(filtered_incidents)} of {len(incidents)} "
+        f"incident(s) found"
+    )
 
-        st.info("No matching incidents found. Try another keyword.")
+    if not filtered_incidents:
+
+        st.info(
+            "No matching incidents found. Try changing or clearing "
+            "your search and filters."
+        )
 
     else:
 
-        for incident in results:
+        for incident in filtered_incidents:
 
             incident_id = incident.get("incident_id", "Unknown")
             name = incident.get("name", "Unnamed Incident")
@@ -675,6 +820,7 @@ elif page == "Incident Explorer":
                 col2.metric("Techniques", len(techniques))
                 col3.metric("Sources", len(sources))
 
+                # Associated techniques
                 st.markdown(
                     '<div class="detail-section label-lavender">'
                     'ASSOCIATED TECHNIQUES</div>',
@@ -702,8 +848,10 @@ elif page == "Incident Explorer":
                         )
 
                 else:
+
                     st.caption("No techniques recorded.")
 
+                # Incident findings
                 st.markdown(
                     '<div class="detail-section label-blue">'
                     'INCIDENT FINDINGS</div>',
@@ -731,8 +879,10 @@ elif page == "Incident Explorer":
                         st.write("")
 
                 else:
+
                     st.caption("No findings recorded.")
 
+                # Supporting sources
                 st.markdown(
                     '<div class="detail-section label-cyan">'
                     'SUPPORTING SOURCES</div>',
@@ -767,9 +917,8 @@ elif page == "Incident Explorer":
                         )
 
                 else:
+
                     st.caption("No sources recorded.")
-
-
 # ============================================
 # FINDING ANALYSIS
 # ============================================
