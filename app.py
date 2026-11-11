@@ -1,5 +1,23 @@
 import streamlit as st
 from collections import Counter
+from io import BytesIO
+from datetime import datetime
+
+from reportlab.lib import colors
+from reportlab.lib.enums import TA_CENTER
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.units import mm
+from reportlab.platypus import (
+    SimpleDocTemplate,
+    Paragraph,
+    Spacer,
+    Table,
+    TableStyle,
+    PageBreak
+)
+from xml.sax.saxutils import escape
+
 from src.data_loader import load_incidents
 from src.search import search_incidents
 from src.evidence import (
@@ -199,252 +217,326 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"] * {
     font-size: 32px !important;
     font-weight: 700 !important;
 }
+/* DOWNLOAD BUTTONS */
 
-/* INCIDENT DETAILS */
-
-.detail-label {
-    font-size: 13px;
-    font-weight: 600;
-    margin-bottom: 5px;
-}
-
-.detail-value {
-    color: #F1F5F9;
-    font-size: 15px;
-    font-weight: 500;
-    line-height: 1.7;
-    margin-bottom: 16px;
-}
-
-.label-blue {
-    color: #75B9F2;
-}
-
-.label-purple {
-    color: #B8A5F5;
-}
-
-.label-teal {
-    color: #72D6C2;
-}
-
-.label-cyan {
-    color: #73C9DF;
-}
-
-.label-lavender {
-    color: #C2B5F5;
-}
-
-.detail-section {
-    margin-top: 20px;
-    margin-bottom: 10px;
-    font-size: 16px;
-    font-weight: 600;
-}
-
-/* EVIDENCE STATUS BADGES */
-
-.evidence-badge {
-    display: inline-block;
-    padding: 5px 11px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: 600;
-    margin-top: 5px;
-}
-
-.status-supported {
-    background-color: #173B32;
-    color: #75DDBA;
-    border: 1px solid #28604F;
-}
-
-.status-unverified {
-    background-color: #3A321E;
-    color: #F0C66B;
-    border: 1px solid #74602D;
-}
-
-.status-disputed {
-    background-color: #40252B;
-    color: #F28C9B;
-    border: 1px solid #75404A;
-}
-
-.status-insufficient {
-    background-color: #303746;
-    color: #B9C2D0;
-    border: 1px solid #4C586B;
-}
-
-/* EXPANDABLE CARDS */
-
-div[data-testid="stExpander"] details {
-    background-color: #192738 !important;
-    border: 1px solid #304258 !important;
-    border-radius: 10px;
-}
-
-div[data-testid="stExpander"] summary {
-    background-color: #192738 !important;
-    color: #E6EDF5 !important;
-}
-
-div[data-testid="stExpander"] summary p {
-    color: #E6EDF5 !important;
-    font-weight: 600;
-}
-
-div[data-testid="stExpander"] [data-testid="stExpanderDetails"] {
-    background-color: #141E2B !important;
-}
-
-/* INPUT FIELDS */
-
-.stTextInput input,
-.stMultiSelect div[data-baseweb="select"] {
-    background-color: #192738 !important;
-    color: #E6EDF5 !important;
-    border-color: #304258 !important;
-}
-
-.stTextInput label,
-.stMultiSelect label {
-    color: #DCE6F1 !important;
-}
-
-/* DIVIDERS */
-
-hr {
-    border-color: #293B50 !important;
-}
-
-/* BUTTONS */
-
-.stButton button {
-    background-color: #244D70;
-    color: #FFFFFF;
-    border: 1px solid #35658D;
-    border-radius: 8px;
-}
-
-.stButton button:hover {
-    background-color: #30658F;
-    border-color: #63B3ED;
-    color: #FFFFFF;
-}
-
-/* DOWNLOAD AND LINK BUTTONS */
-
-[data-testid="stDownloadButton"] button,
-[data-testid="stLinkButton"] a {
-    background-color: #244D70 !important;
-    color: #F1F5F9 !important;
-    border: 1px solid #35658D !important;
+div[data-testid="stDownloadButton"] button {
+    background-color: #2563EB !important;
+    color: #FFFFFF !important;
+    border: 1px solid #3B82F6 !important;
     border-radius: 8px !important;
     font-weight: 600 !important;
-    opacity: 1 !important;
-    text-decoration: none !important;
 }
 
-[data-testid="stDownloadButton"] button:hover,
-[data-testid="stLinkButton"] a:hover {
-    background-color: #30658F !important;
-    border-color: #63B3ED !important;
+div[data-testid="stDownloadButton"] button p {
     color: #FFFFFF !important;
 }
 
-[data-testid="stDownloadButton"] button p,
-[data-testid="stLinkButton"] a p {
-    color: #F1F5F9 !important;
-    opacity: 1 !important;
+div[data-testid="stDownloadButton"] button:hover {
+    background-color: #1D4ED8 !important;
+    border-color: #60A5FA !important;
 }
 
-/* EVIDENCE REPORT */
-
-[data-testid="stCode"] {
-    background-color: #141E2B !important;
-    border: 1px solid #304258 !important;
-    border-radius: 10px !important;
+div[data-testid="stDownloadButton"] button:focus {
+    color: #FFFFFF !important;
 }
-
-[data-testid="stCode"] pre {
-    background-color: #141E2B !important;
-    padding: 22px !important;
-}
-
-[data-testid="stCode"] code {
-    color: #E6EDF5 !important;
-    font-family: 'Inter', sans-serif !important;
-    font-size: 14px !important;
-    line-height: 2 !important;
-    white-space: pre-wrap !important;
-    overflow-wrap: anywhere !important;
-}
-
-/* FOOTER */
-
-.footer {
-    color: #91A0B3;
-    font-size: 12px;
-    border-top: 1px solid #293B50;
-    padding-top: 18px;
-    margin-top: 40px;
-}
-
-</style>
 """, unsafe_allow_html=True)
-
-
 # ============================================
-# HELPER FUNCTION: EVIDENCE STATUS
+# HELPER FUNCTION: GENERATE INCIDENT PDF
 # ============================================
 
-def display_evidence_status(status):
+def generate_incident_pdf(incident):
 
-    status_styles = {
-        "supported": ("status-supported", "SUPPORTED"),
-        "unverified": ("status-unverified", "UNVERIFIED"),
-        "disputed": ("status-disputed", "DISPUTED"),
-        "insufficient_evidence": (
-            "status-insufficient",
-            "INSUFFICIENT EVIDENCE"
+    buffer = BytesIO()
+
+    doc = SimpleDocTemplate(
+        buffer,
+        pagesize=A4,
+        rightMargin=18 * mm,
+        leftMargin=18 * mm,
+        topMargin=18 * mm,
+        bottomMargin=18 * mm
+    )
+
+    styles = getSampleStyleSheet()
+
+    styles.add(ParagraphStyle(
+        name="ReportTitle",
+        parent=styles["Title"],
+        fontSize=20,
+        leading=25,
+        alignment=TA_CENTER,
+        textColor=colors.HexColor("#17365D"),
+        spaceAfter=8
+    ))
+
+    styles.add(ParagraphStyle(
+        name="SectionHeading",
+        parent=styles["Heading2"],
+        fontSize=13,
+        leading=17,
+        textColor=colors.HexColor("#1F5A85"),
+        spaceBefore=14,
+        spaceAfter=7
+    ))
+
+    styles.add(ParagraphStyle(
+        name="ReportBody",
+        parent=styles["BodyText"],
+        fontSize=9,
+        leading=13,
+        spaceAfter=6
+    ))
+
+    story = []
+
+    # REPORT TITLE
+    story.append(Paragraph(
+        "CyberScope",
+        styles["ReportTitle"]
+    ))
+
+    story.append(Paragraph(
+        "CYBER INCIDENT INTELLIGENCE REPORT",
+        styles["Heading2"]
+    ))
+
+    story.append(Spacer(1, 10))
+
+    # INCIDENT OVERVIEW
+    story.append(Paragraph(
+        "1. Incident Overview",
+        styles["SectionHeading"]
+    ))
+
+    incident_data = [
+        ["Incident ID", escape(str(incident.get("incident_id", "N/A")))],
+        ["Incident Name", escape(str(incident.get("name", "Unknown")))],
+        ["Category", escape(str(incident.get("category", "Unknown")))],
+        ["Report Generated", datetime.now().strftime("%d %B %Y, %I:%M %p")]
+    ]
+
+    overview_table = Table(
+        incident_data,
+        colWidths=[40 * mm, 120 * mm]
+    )
+
+    overview_table.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (0, -1), colors.HexColor("#E8EFF7")),
+        ("TEXTCOLOR", (0, 0), (-1, -1), colors.HexColor("#222222")),
+        ("FONTNAME", (0, 0), (0, -1), "Helvetica-Bold"),
+        ("FONTSIZE", (0, 0), (-1, -1), 9),
+        ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
+        ("VALIGN", (0, 0), (-1, -1), "TOP"),
+        ("PADDING", (0, 0), (-1, -1), 7)
+    ]))
+
+    story.append(overview_table)
+
+    # INCIDENT SUMMARY
+    story.append(Paragraph(
+        "2. Incident Summary",
+        styles["SectionHeading"]
+    ))
+
+    summary = incident.get(
+        "summary",
+        "No incident summary available."
+    )
+
+    story.append(Paragraph(
+        escape(str(summary)),
+        styles["ReportBody"]
+    ))
+
+    # INCIDENT FINDINGS
+    story.append(Paragraph(
+        "3. Incident Findings",
+        styles["SectionHeading"]
+    ))
+
+    findings = incident.get("findings", [])
+
+    if findings:
+
+        finding_data = [
+            ["Finding ID", "Claim", "Evidence Status"]
+        ]
+
+        for finding in findings:
+
+            finding_data.append([
+                escape(str(finding.get("finding_id", "N/A"))),
+                Paragraph(
+                    escape(str(finding.get("claim", "N/A"))),
+                    styles["ReportBody"]
+                ),
+                escape(
+                    str(
+                        finding.get(
+                            "evidence_status",
+                            "Unknown"
+                        )
+                    ).replace("_", " ").title()
+                )
+            ])
+
+        finding_table = Table(
+            finding_data,
+            colWidths=[30 * mm, 95 * mm, 35 * mm],
+            repeatRows=1
         )
-    }
 
-    css_class, label = status_styles.get(
-        status,
-        ("status-insufficient", "UNKNOWN")
-    )
+        finding_table.setStyle(TableStyle([
+            ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#17365D")),
+            ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+            ("FONTSIZE", (0, 0), (-1, -1), 8),
+            ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
+            ("VALIGN", (0, 0), (-1, -1), "TOP"),
+            ("PADDING", (0, 0), (-1, -1), 6)
+        ]))
 
-    st.markdown(
-        f'<span class="evidence-badge {css_class}">{label}</span>',
-        unsafe_allow_html=True
-    )
+        story.append(finding_table)
 
+    else:
 
+        story.append(Paragraph(
+            "No findings are recorded for this incident.",
+            styles["ReportBody"]
+        ))
+
+    # MITRE ATT&CK TECHNIQUES
+    story.append(Paragraph(
+        "4. MITRE ATT&CK Technique Mappings",
+        styles["SectionHeading"]
+    ))
+
+    techniques = incident.get("techniques", [])
+
+    if techniques:
+
+        technique_data = [
+            ["Technique ID", "Technique Name"]
+        ]
+
+        for technique in techniques:
+
+            technique_data.append([
+                escape(str(technique.get("technique_id", "N/A"))),
+                escape(str(technique.get("name", "Unknown")))
+            ])
+
+        technique_table = Table(
+            technique_data,
+            colWidths=[45 * mm, 115 * mm],
+            repeatRows=1
+        )
+
+        technique_table.setStyle(TableStyle([
+            ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#17365D")),
+            ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+            ("FONTSIZE", (0, 0), (-1, -1), 8),
+            ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
+            ("VALIGN", (0, 0), (-1, -1), "TOP"),
+            ("PADDING", (0, 0), (-1, -1), 6)
+        ]))
+
+        story.append(technique_table)
+
+    else:
+
+        story.append(Paragraph(
+            "No MITRE ATT&CK techniques are recorded.",
+            styles["ReportBody"]
+        ))
+
+    # SUPPORTING SOURCES
+    story.append(Paragraph(
+        "5. Supporting Source References",
+        styles["SectionHeading"]
+    ))
+
+    sources = incident.get("sources", [])
+
+    if sources:
+
+        for index, source in enumerate(sources, start=1):
+
+            title = escape(str(source.get("title", "Untitled source")))
+            publisher = escape(str(source.get("publisher", "Unknown")))
+            source_type = escape(str(source.get("source_type", "Unknown")))
+            source_id = escape(str(source.get("source_id", "N/A")))
+
+            story.append(Paragraph(
+                f"<b>{index}. {title}</b>",
+                styles["ReportBody"]
+            ))
+
+            story.append(Paragraph(
+                f"Publisher: {publisher}<br/>"
+                f"Source Type: {source_type}<br/>"
+                f"Source ID: {source_id}",
+                styles["ReportBody"]
+            ))
+
+            source_url = source.get("url", "")
+
+            if (
+                isinstance(source_url, str)
+                and source_url.startswith(("https://", "http://"))
+            ):
+
+                safe_url = escape(source_url, {'"': "&quot;"})
+
+                story.append(Paragraph(
+                    f'<link href="{safe_url}" color="blue">'
+                    f"{escape(source_url)}</link>",
+                    styles["ReportBody"]
+                ))
+
+            story.append(Spacer(1, 5))
+
+    else:
+
+        story.append(Paragraph(
+            "No supporting sources are recorded.",
+            styles["ReportBody"]
+        ))
+
+    # DISCLAIMER
+    story.append(Spacer(1, 15))
+
+    story.append(Paragraph(
+        "<b>Evidence Disclaimer</b>",
+        styles["SectionHeading"]
+    ))
+
+    story.append(Paragraph(
+        "This report presents information recorded in the CyberScope "
+        "dataset. Evidence status labels and source associations reflect "
+        "the current dataset and should not be treated as independent "
+        "verification of every incident claim. Refer to the original "
+        "sources for further investigation.",
+        styles["ReportBody"]
+    ))
+
+    # BUILD PDF
+    doc.build(story)
+
+    buffer.seek(0)
+
+    return buffer.getvalue()
 # ============================================
 # SIDEBAR NAVIGATION
 # ============================================
 
-with st.sidebar:
+st.sidebar.markdown("## 🔐 CyberScope")
+st.sidebar.caption("Cyber Threat Intelligence")
 
-    st.markdown(
-        '<div class="brand">Cyber<span>Scope</span></div>',
-        unsafe_allow_html=True
-    )
-
-    st.markdown(
-        '<div class="subtitle">THREAT INTELLIGENCE PLATFORM</div>',
-        unsafe_allow_html=True
-    )
-
-    st.markdown("### WORKSPACE")
-
-    page = st.radio(
+page = st.sidebar.radio(
     "Navigation",
-        [
+    [
         "Overview",
         "Incident Explorer",
         "Finding Analysis",
@@ -453,20 +545,10 @@ with st.sidebar:
         "Incident Trends & Insights",
         "MITRE ATT&CK Technique Explorer",
         "Incident Comparison",
-        "Source & Reference Explorer"
-    ],
-    label_visibility="collapsed"
+        "Source & Reference Explorer",
+        "Incident Intelligence Reports"
+    ]
 )
-
-    st.divider()
-
-    st.markdown("### PLATFORM")
-
-    st.caption("Evidence-driven cyber threat research")
-    st.caption("Version 1.0 | Development")
-
-
-# ============================================
 # MAIN HEADER
 # ============================================
 
@@ -920,6 +1002,8 @@ elif page == "Incident Explorer":
                 else:
 
                     st.caption("No sources recorded.")
+
+
 # ============================================
 # FINDING ANALYSIS
 # ============================================
@@ -930,7 +1014,6 @@ elif page == "Finding Analysis":
         '<div class="main-heading">Finding Analysis</div>',
         unsafe_allow_html=True
     )
-
     st.markdown("""
     <div class="description">
         Investigate individual incident findings, review their linked sources,
@@ -1449,263 +1532,261 @@ elif page == "Evidence Analysis":
                     "No findings have been flagged for further review "
                     "by the current evidence quality checks."
                 )
-    
-# ============================================
-# INCIDENT COMPARISON
-# ============================================
-    # =========================================================
-    # GLOBAL EVIDENCE ANALYTICS
-    # =========================================================
+# =========================================================
+# GLOBAL EVIDENCE ANALYTICS
+# =========================================================
 
 elif page == "Global Evidence Analytics":
 
-        st.title("Global Evidence Analytics")
+    st.title("Global Evidence Analytics")
 
-        st.markdown(
-            "A platform-wide overview of evidence coverage, "
-            "source diversity, and findings that may require review."
-        )
+    st.markdown(
+        "A platform-wide overview of evidence coverage, "
+        "source diversity, and findings that may require review."
+    )
 
-        # Load all incidents
-        incidents = load_incidents()
+    # Load all incidents
+    incidents = load_incidents()
 
-        # -----------------------------------------------------
-        # COLLECT GLOBAL EVIDENCE DATA
-        # -----------------------------------------------------
+    # -----------------------------------------------------
+    # COLLECT GLOBAL EVIDENCE DATA
+    # -----------------------------------------------------
 
-        total_incidents = len(incidents)
+    total_incidents = len(incidents)
 
-        total_findings = 0
-        supported_findings = 0
-        unverified_findings = 0
-        disputed_findings = 0
-        insufficient_findings = 0
+    total_findings = 0
+    supported_findings = 0
+    unverified_findings = 0
+    disputed_findings = 0
+    insufficient_findings = 0
 
-        all_source_ids = set()
-        all_publishers = set()
+    all_source_ids = set()
+    all_publishers = set()
 
-        review_findings = []
-        incident_review_counts = []
+    review_findings = []
+    incident_review_counts = []
 
-        status_counts = {
-            "Supported": 0,
-            "Unverified": 0,
-            "Disputed": 0,
-            "Insufficient Evidence": 0
+    status_counts = {
+        "Supported": 0,
+        "Unverified": 0,
+        "Disputed": 0,
+        "Insufficient Evidence": 0
+    }
+
+    # Process every incident
+    for incident in incidents:
+
+        incident_findings = incident.get("findings", [])
+        incident_sources = incident.get("sources", [])
+
+        source_lookup = {
+            source.get("source_id"): source
+            for source in incident_sources
         }
 
-        # Process every incident
-        for incident in incidents:
+        incident_review_count = 0
 
-            incident_findings = incident.get("findings", [])
-            incident_sources = incident.get("sources", [])
+        for finding in incident_findings:
 
-            source_lookup = {
-                source.get("source_id"): source
-                for source in incident_sources
-            }
+            total_findings += 1
 
-            incident_review_count = 0
-
-            for finding in incident_findings:
-
-                total_findings += 1
-
-                status = finding.get(
-                    "evidence_status",
-                    "unverified"
-                )
-
-                status = status.lower()
-
-                source_ids = finding.get("source_ids", [])
-
-                # Count evidence status
-                if status == "supported":
-                    supported_findings += 1
-                    status_counts["Supported"] += 1
-
-                elif status == "unverified":
-                    unverified_findings += 1
-                    status_counts["Unverified"] += 1
-
-                elif status == "disputed":
-                    disputed_findings += 1
-                    status_counts["Disputed"] += 1
-
-                elif status == "insufficient_evidence":
-                    insufficient_findings += 1
-                    status_counts["Insufficient Evidence"] += 1
-
-                # Collect linked sources and publishers
-                linked_publishers = set()
-
-                for source_id in source_ids:
-
-                    source = source_lookup.get(source_id)
-
-                    if source:
-
-                        all_source_ids.add(source_id)
-
-                        publisher = source.get("publisher")
-
-                        if publisher:
-                            all_publishers.add(publisher)
-                            linked_publishers.add(publisher)
-
-                # Identify findings that need review
-                needs_review = (
-                    status in [
-                        "unverified",
-                        "disputed",
-                        "insufficient_evidence"
-                    ]
-                    or len(source_ids) == 0
-                )
-
-                if needs_review:
-
-                    incident_review_count += 1
-
-                    review_findings.append({
-                        "Incident": incident.get("name", "Unknown"),
-                        "Finding ID": finding.get("finding_id", "N/A"),
-                        "Claim": finding.get("claim", "N/A"),
-                        "Evidence Status": status.replace(
-                            "_", " "
-                        ).title(),
-                        "Linked Sources": len(source_ids),
-                        "Distinct Publishers": len(linked_publishers)
-                    })
-
-            incident_review_counts.append({
-                "Incident": incident.get("name", "Unknown"),
-                "Findings Requiring Review": incident_review_count
-            })
-
-        # -----------------------------------------------------
-        # GLOBAL METRICS
-        # -----------------------------------------------------
-
-        st.subheader("Platform-wide Overview")
-
-        col1, col2, col3, col4 = st.columns(4)
-
-        col1.metric("Total Incidents", total_incidents)
-        col2.metric("Total Findings", total_findings)
-        col3.metric("Linked Sources", len(all_source_ids))
-        col4.metric("Unique Publishers", len(all_publishers))
-
-        st.divider()
-
-        # -----------------------------------------------------
-        # EVIDENCE STATUS DISTRIBUTION
-        # -----------------------------------------------------
-
-        st.subheader("Evidence Status Distribution")
-
-        col1, col2, col3, col4 = st.columns(4)
-
-        col1.metric("Supported", supported_findings)
-        col2.metric("Unverified", unverified_findings)
-        col3.metric("Disputed", disputed_findings)
-        col4.metric("Insufficient Evidence", insufficient_findings)
-
-        st.markdown("#### Findings by Evidence Status")
-
-        st.bar_chart(status_counts)
-
-        st.caption(
-            "This chart represents the evidence status labels "
-            "assigned to findings in the dataset."
-        )
-
-        st.divider()
-
-        # -----------------------------------------------------
-        # EVIDENCE GAPS
-        # -----------------------------------------------------
-
-        st.subheader("Evidence Gaps Across Incidents")
-
-        st.markdown(
-            "The following findings are flagged for review because "
-            "they are unverified, disputed, have insufficient evidence, "
-            "or have no linked sources."
-        )
-
-        if review_findings:
-
-            st.metric(
-                "Total Findings Requiring Review",
-                len(review_findings)
+            status = finding.get(
+                "evidence_status",
+                "unverified"
             )
 
-            st.dataframe(
-                review_findings,
-                use_container_width=True,
-                hide_index=True
+            status = status.lower()
+
+            source_ids = finding.get("source_ids", [])
+
+            # Count evidence status
+            if status == "supported":
+                supported_findings += 1
+                status_counts["Supported"] += 1
+
+            elif status == "unverified":
+                unverified_findings += 1
+                status_counts["Unverified"] += 1
+
+            elif status == "disputed":
+                disputed_findings += 1
+                status_counts["Disputed"] += 1
+
+            elif status == "insufficient_evidence":
+                insufficient_findings += 1
+                status_counts["Insufficient Evidence"] += 1
+
+            # Collect linked sources and publishers
+            linked_publishers = set()
+
+            for source_id in source_ids:
+
+                source = source_lookup.get(source_id)
+
+                if source:
+
+                    all_source_ids.add(source_id)
+
+                    publisher = source.get("publisher")
+
+                    if publisher:
+                        all_publishers.add(publisher)
+                        linked_publishers.add(publisher)
+
+            # Identify findings that need review
+            needs_review = (
+                status in [
+                    "unverified",
+                    "disputed",
+                    "insufficient_evidence"
+                ]
+                or len(source_ids) == 0
             )
 
-        else:
+            if needs_review:
 
-            st.success("No findings currently require review.")
+                incident_review_count += 1
 
-        st.divider()
+                review_findings.append({
+                    "Incident": incident.get("name", "Unknown"),
+                    "Finding ID": finding.get("finding_id", "N/A"),
+                    "Claim": finding.get("claim", "N/A"),
+                    "Evidence Status": status.replace(
+                        "_", " "
+                    ).title(),
+                    "Linked Sources": len(source_ids),
+                    "Distinct Publishers": len(linked_publishers)
+                })
 
-        # -----------------------------------------------------
-        # INCIDENT-WISE REVIEW SUMMARY
-        # -----------------------------------------------------
+        incident_review_counts.append({
+            "Incident": incident.get("name", "Unknown"),
+            "Findings Requiring Review": incident_review_count
+        })
 
-        st.subheader("Incidents Requiring the Most Review")
+    # -----------------------------------------------------
+    # GLOBAL METRICS
+    # -----------------------------------------------------
 
-        incident_review_counts.sort(
-            key=lambda item: item["Findings Requiring Review"],
-            reverse=True
+    st.subheader("Platform-wide Overview")
+
+    col1, col2, col3, col4 = st.columns(4)
+
+    col1.metric("Total Incidents", total_incidents)
+    col2.metric("Total Findings", total_findings)
+    col3.metric("Linked Sources", len(all_source_ids))
+    col4.metric("Unique Publishers", len(all_publishers))
+
+    st.divider()
+
+    # -----------------------------------------------------
+    # EVIDENCE STATUS DISTRIBUTION
+    # -----------------------------------------------------
+
+    st.subheader("Evidence Status Distribution")
+
+    col1, col2, col3, col4 = st.columns(4)
+
+    col1.metric("Supported", supported_findings)
+    col2.metric("Unverified", unverified_findings)
+    col3.metric("Disputed", disputed_findings)
+    col4.metric("Insufficient Evidence", insufficient_findings)
+
+    st.markdown("#### Findings by Evidence Status")
+
+    st.bar_chart(status_counts)
+
+    st.caption(
+        "This chart represents the evidence status labels "
+        "assigned to findings in the dataset."
+    )
+
+    st.divider()
+
+    # -----------------------------------------------------
+    # EVIDENCE GAPS
+    # -----------------------------------------------------
+
+    st.subheader("Evidence Gaps Across Incidents")
+
+    st.markdown(
+        "The following findings are flagged for review because "
+        "they are unverified, disputed, have insufficient evidence, "
+        "or have no linked sources."
+    )
+
+    if review_findings:
+
+        st.metric(
+            "Total Findings Requiring Review",
+            len(review_findings)
         )
 
         st.dataframe(
-            incident_review_counts,
+            review_findings,
             use_container_width=True,
             hide_index=True
         )
 
-        st.divider()
+    else:
 
-        # -----------------------------------------------------
-        # PUBLISHER DIVERSITY
-        # -----------------------------------------------------
+        st.success("No findings currently require review.")
 
-        st.subheader("Source Publisher Overview")
+    st.divider()
 
-        st.metric(
-            "Total Unique Publishers",
-            len(all_publishers)
-        )
+    # -----------------------------------------------------
+    # INCIDENT-WISE REVIEW SUMMARY
+    # -----------------------------------------------------
 
-        if all_publishers:
+    st.subheader("Incidents Requiring the Most Review")
 
-            st.markdown("#### Publishers in the Dataset")
+    incident_review_counts.sort(
+        key=lambda item: item["Findings Requiring Review"],
+        reverse=True
+    )
 
-            for publisher in sorted(all_publishers):
-                st.write(f"• {publisher}")
+    st.dataframe(
+        incident_review_counts,
+        use_container_width=True,
+        hide_index=True
+    )
 
-        else:
+    st.divider()
 
-            st.info("No publishers found in the current dataset.")
+    # -----------------------------------------------------
+    # PUBLISHER DIVERSITY
+    # -----------------------------------------------------
 
-        # -----------------------------------------------------
-        # IMPORTANT NOTE
-        # -----------------------------------------------------
+    st.subheader("Source Publisher Overview")
 
-        st.info(
-            "Note: These analytics describe evidence coverage and "
-            "dataset status labels. A higher source count or publisher "
-            "count does not automatically establish that a finding "
-            "is accurate. Findings should still be reviewed against "
-            "their original sources."
-        )
+    st.metric(
+        "Total Unique Publishers",
+        len(all_publishers)
+    )
+
+    if all_publishers:
+
+        st.markdown("#### Publishers in the Dataset")
+
+        for publisher in sorted(all_publishers):
+            st.write(f"• {publisher}")
+
+    else:
+
+        st.info("No publishers found in the current dataset.")
+
+    # -----------------------------------------------------
+    # IMPORTANT NOTE
+    # -----------------------------------------------------
+
+    st.info(
+        "Note: These analytics describe evidence coverage and "
+        "dataset status labels. A higher source count or publisher "
+        "count does not automatically establish that a finding "
+        "is accurate. Findings should still be reviewed against "
+        "their original sources."
+    )
+
+
 # =========================================================
 # INCIDENT TRENDS & INSIGHTS
 # =========================================================
@@ -2002,10 +2083,11 @@ elif page == "Incident Trends & Insights":
             "not the prevalence of techniques across all real-world "
             "cyberattacks."
         )
+
+
 # =========================================================
 # MITRE ATT&CK TECHNIQUE EXPLORER
 # =========================================================
-
 elif page == "MITRE ATT&CK Technique Explorer":
 
     st.markdown(
@@ -2229,6 +2311,8 @@ elif page == "MITRE ATT&CK Technique Explorer":
                     "Technique associations are based on the "
                     "MITRE ATT&CK mappings recorded in CyberScope."
                 )
+
+
 elif page == "Incident Comparison":
 
     st.markdown(
@@ -2252,7 +2336,7 @@ elif page == "Incident Comparison":
     # Select incidents that have recorded techniques.
     incident_options = {
         f"{incident.get('name', 'Unnamed Incident')} "
-        f"({incident.get('incident_id', 'Unknown')})":
+        f"({incident.get('incident_id', 'Unknown')} )":
         incident.get("incident_id")
         for incident in incidents
         if incident.get("techniques")
@@ -2337,6 +2421,8 @@ elif page == "Incident Comparison":
                     file_name="incident_comparison_report.txt",
                     mime="text/plain"
                 )
+
+
 # ============================================
 # SOURCE & REFERENCE EXPLORER
 # ============================================
@@ -2585,22 +2671,19 @@ elif page == "Source & Reference Explorer":
                             finding.get("claim", "No claim available")
                         )
 
-                        st.caption(
-                            "Evidence Status: "
-                            + finding.get(
-                                "evidence_status", "unknown"
-                            ).replace("_", " ").title()
+                        display_evidence_status(
+                            finding.get("evidence_status", "unknown")
                         )
+
+                        st.write("")
 
                 else:
 
-                    st.caption(
-                        "No findings are directly linked to this source."
-                    )
+                    st.caption("No findings are linked to this source.")
 
                 st.divider()
 
-                # Linked MITRE techniques
+                # Linked techniques
                 st.markdown("#### Linked MITRE ATT&CK Techniques")
 
                 if source["techniques"]:
@@ -2608,21 +2691,278 @@ elif page == "Source & Reference Explorer":
                     for technique in source["techniques"]:
 
                         st.write(
-                            f"• {technique.get('technique_id', 'Unknown')} "
+                            f"• {technique.get('technique_id', 'N/A')} "
                             f"— {technique.get('name', 'Unknown')}"
                         )
 
                 else:
 
                     st.caption(
-                        "No MITRE ATT&CK techniques are linked to this source."
+                        "No MITRE ATT&CK techniques are linked "
+                        "to this source."
                     )
 
     st.divider()
 
     st.info(
-        "Note: Source references show how evidence is connected "
-        "to the incidents, findings, and techniques recorded "
-        "in the current CyberScope dataset. A listed source "
-        "does not automatically establish the accuracy of a claim."
+        "Note: Source associations show how references are connected "
+        "to findings and techniques in the CyberScope dataset. "
+        "A linked source does not automatically prove every associated claim."
     )
+# ============================================
+# INCIDENT INTELLIGENCE REPORTS
+# ============================================
+
+elif page == "Incident Intelligence Reports":
+
+    st.markdown(
+        '<div class="main-heading">Incident Intelligence Reports</div>',
+        unsafe_allow_html=True
+    )
+
+    st.markdown("""
+    <div class="description">
+        Generate downloadable intelligence reports for documented
+        cyber incidents, including findings, evidence status,
+        MITRE ATT&CK mappings and supporting references.
+    </div>
+    """, unsafe_allow_html=True)
+
+    # Load incident database
+    try:
+        incidents = load_incidents()
+
+    except ValueError as error:
+        st.error(f"Unable to load incident data: {error}")
+        st.stop()
+
+    if not incidents:
+
+        st.warning("No incidents are available for report generation.")
+
+    else:
+
+        # Incident selection
+        incident_options = {
+            f"{incident.get('name', 'Unknown')} "
+            f"({incident.get('incident_id', 'Unknown')})": incident
+            for incident in incidents
+        }
+
+        st.markdown("### Select an Incident")
+
+        selected_label = st.selectbox(
+            "Choose an incident to generate its report",
+            options=list(incident_options.keys()),
+            key="intelligence_report_incident"
+        )
+
+        selected_incident = incident_options[selected_label]
+
+        findings = selected_incident.get("findings", [])
+        techniques = selected_incident.get("techniques", [])
+        sources = selected_incident.get("sources", [])
+
+        st.divider()
+
+        # Report overview
+        st.markdown("### Report Overview")
+
+        col1, col2, col3 = st.columns(3)
+
+        col1.metric(
+            "Findings",
+            len(findings)
+        )
+
+        col2.metric(
+            "MITRE Techniques",
+            len(techniques)
+        )
+
+        col3.metric(
+            "Supporting Sources",
+            len(sources)
+        )
+
+        st.divider()
+
+        # Incident details
+        st.markdown("### Incident Details")
+
+        st.write(
+            f"**Incident Name:** {selected_incident.get('name', 'Unknown')}"
+        )
+
+        st.write(
+            f"**Incident ID:** {selected_incident.get('incident_id', 'N/A')}"
+        )
+
+        st.write(
+            f"**Category:** {selected_incident.get('category', 'Unknown')}"
+        )
+
+        st.write(
+            f"**Summary:** {selected_incident.get('summary', 'Not available')}"
+        )
+
+        st.divider()
+
+        # Download options
+        st.markdown("### Export Intelligence Report")
+
+        st.write(
+            "Choose a format to download the incident intelligence report."
+        )
+
+        incident_id = str(
+            selected_incident.get("incident_id", "incident")
+        )
+
+        safe_filename = "".join(
+            character if character.isalnum() or character in "-_"
+            else "_"
+            for character in incident_id
+        )
+
+        # Generate PDF
+        pdf_data = generate_incident_pdf(selected_incident)
+
+        # Generate TXT
+        text_lines = []
+
+        text_lines.append(
+            "CYBERSCOPE - CYBER INCIDENT INTELLIGENCE REPORT"
+        )
+
+        text_lines.append("=" * 60)
+
+        text_lines.append(
+            f"Incident ID: {selected_incident.get('incident_id', 'N/A')}"
+        )
+
+        text_lines.append(
+            f"Incident Name: {selected_incident.get('name', 'Unknown')}"
+        )
+
+        text_lines.append(
+            f"Category: {selected_incident.get('category', 'Unknown')}"
+        )
+
+        text_lines.append(
+            f"Report Generated: {datetime.now().strftime('%d %B %Y, %I:%M %p')}"
+        )
+
+        text_lines.append("\nINCIDENT SUMMARY")
+        text_lines.append("-" * 60)
+
+        text_lines.append(
+            selected_incident.get("summary", "No summary available.")
+        )
+
+        text_lines.append("\nINCIDENT FINDINGS")
+        text_lines.append("-" * 60)
+
+        if findings:
+
+            for finding in findings:
+
+                text_lines.append(
+                    f"\nFinding ID: {finding.get('finding_id', 'N/A')}"
+                )
+
+                text_lines.append(
+                    f"Claim: {finding.get('claim', 'N/A')}"
+                )
+
+                text_lines.append(
+                    f"Evidence Status: "
+                    f"{finding.get('evidence_status', 'Unknown')}"
+                )
+
+        else:
+
+            text_lines.append("No findings recorded.")
+
+        text_lines.append("\nMITRE ATT&CK TECHNIQUES")
+        text_lines.append("-" * 60)
+
+        if techniques:
+
+            for technique in techniques:
+
+                text_lines.append(
+                    f"{technique.get('technique_id', 'N/A')} - "
+                    f"{technique.get('name', 'Unknown')}"
+                )
+
+        else:
+
+            text_lines.append("No techniques recorded.")
+
+        text_lines.append("\nSUPPORTING SOURCE REFERENCES")
+        text_lines.append("-" * 60)
+
+        if sources:
+
+            for index, source in enumerate(sources, start=1):
+
+                text_lines.append(f"\n{index}. {source.get('title', 'Untitled')}")
+
+                text_lines.append(
+                    f"Publisher: {source.get('publisher', 'Unknown')}"
+                )
+
+                text_lines.append(
+                    f"Source Type: {source.get('source_type', 'Unknown')}"
+                )
+
+                text_lines.append(
+                    f"Source ID: {source.get('source_id', 'N/A')}"
+                )
+
+                text_lines.append(
+                    f"URL: {source.get('url', 'Not available')}"
+                )
+
+        else:
+
+            text_lines.append("No supporting sources recorded.")
+
+        text_lines.append("\nEVIDENCE DISCLAIMER")
+        text_lines.append("-" * 60)
+
+        text_lines.append(
+            "This report presents information recorded in the CyberScope "
+            "dataset. Evidence status labels and source associations do "
+            "not independently verify every incident claim. Refer to "
+            "original sources for further investigation."
+        )
+
+        txt_report = "\n".join(text_lines)
+
+        col1, col2 = st.columns(2)
+
+        with col1:
+
+            st.download_button(
+                label="Download PDF Report",
+                data=pdf_data,
+                file_name=f"{safe_filename}_intelligence_report.pdf",
+                mime="application/pdf",
+                use_container_width=True
+            )
+
+        with col2:
+
+            st.download_button(
+                label="Download TXT Report",
+                data=txt_report,
+                file_name=f"{safe_filename}_intelligence_report.txt",
+                mime="text/plain",
+                use_container_width=True
+            )
+
+        st.success(
+            "Your incident intelligence report is ready for download."
+        )
