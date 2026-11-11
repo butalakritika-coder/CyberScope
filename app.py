@@ -452,7 +452,8 @@ with st.sidebar:
         "Global Evidence Analytics",
         "Incident Trends & Insights",
         "MITRE ATT&CK Technique Explorer",
-        "Incident Comparison"
+        "Incident Comparison",
+        "Source & Reference Explorer"
     ],
     label_visibility="collapsed"
 )
@@ -2336,3 +2337,292 @@ elif page == "Incident Comparison":
                     file_name="incident_comparison_report.txt",
                     mime="text/plain"
                 )
+# ============================================
+# SOURCE & REFERENCE EXPLORER
+# ============================================
+
+elif page == "Source & Reference Explorer":
+
+    st.markdown(
+        '<div class="main-heading">Source & Reference Explorer</div>',
+        unsafe_allow_html=True
+    )
+
+    st.markdown("""
+    <div class="description">
+        Explore the evidence library, search research sources,
+        examine publisher information, and trace references
+        back to their associated incidents and findings.
+    </div>
+    """, unsafe_allow_html=True)
+
+    try:
+        incidents = load_incidents()
+    except ValueError as error:
+        st.error(f"Unable to load incident data: {error}")
+        st.stop()
+
+    # -------------------------------------------------
+    # BUILD SOURCE LIBRARY
+    # -------------------------------------------------
+
+    source_library = []
+
+    for incident in incidents:
+
+        incident_id = incident.get("incident_id", "Unknown")
+        incident_name = incident.get("name", "Unknown")
+
+        findings = incident.get("findings", [])
+        techniques = incident.get("techniques", [])
+
+        for source in incident.get("sources", []):
+
+            source_id = source.get("source_id", "Unknown")
+
+            # Find findings linked to this source.
+            linked_findings = [
+                finding
+                for finding in findings
+                if source_id in finding.get("source_ids", [])
+            ]
+
+            # Find techniques linked to this source.
+            linked_techniques = [
+                technique
+                for technique in techniques
+                if source_id in technique.get("source_ids", [])
+            ]
+
+            source_library.append({
+                "source_id": source_id,
+                "title": source.get("title", "Untitled source"),
+                "publisher": source.get("publisher", "Unknown publisher"),
+                "source_type": source.get("source_type", "Unknown"),
+                "url": source.get("url", ""),
+                "date": source.get(
+                    "date",
+                    source.get("publication_date", "Not available")
+                ),
+                "incident_id": incident_id,
+                "incident_name": incident_name,
+                "findings": linked_findings,
+                "techniques": linked_techniques
+            })
+
+    # -------------------------------------------------
+    # SOURCE LIBRARY OVERVIEW
+    # -------------------------------------------------
+
+    st.subheader("Source Library Overview")
+
+    total_sources = len(source_library)
+
+    unique_publishers = len({
+        source["publisher"]
+        for source in source_library
+    })
+
+    unique_source_types = len({
+        source["source_type"]
+        for source in source_library
+    })
+
+    col1, col2, col3 = st.columns(3)
+
+    col1.metric("Total Sources", total_sources)
+    col2.metric("Unique Publishers", unique_publishers)
+    col3.metric("Source Types", unique_source_types)
+
+    st.divider()
+
+    # -------------------------------------------------
+    # SEARCH AND FILTER SOURCES
+    # -------------------------------------------------
+
+    st.subheader("Search Evidence Sources")
+
+    search_query = st.text_input(
+        "Search sources",
+        placeholder="Try Microsoft, CERT-In, WannaCry...",
+        key="source_search_query"
+    )
+
+    source_types = sorted({
+        source["source_type"]
+        for source in source_library
+    })
+
+    selected_source_types = st.multiselect(
+        "Filter by Source Type",
+        options=source_types,
+        key="source_type_filter",
+        placeholder="Select source types"
+    )
+
+    # -------------------------------------------------
+    # APPLY SEARCH AND FILTERS
+    # -------------------------------------------------
+
+    filtered_sources = []
+
+    for source in source_library:
+
+        searchable_text = " ".join([
+            source["title"],
+            source["publisher"],
+            source["source_type"],
+            source["source_id"],
+            source["incident_name"]
+        ]).lower()
+
+        matches_search = (
+            search_query.strip().lower() in searchable_text
+        )
+
+        matches_type = (
+            not selected_source_types
+            or source["source_type"] in selected_source_types
+        )
+
+        if matches_search and matches_type:
+            filtered_sources.append(source)
+
+    st.caption(
+        f"{len(filtered_sources)} of {total_sources} source(s) found"
+    )
+
+    st.divider()
+
+    # -------------------------------------------------
+    # DISPLAY SOURCE LIBRARY
+    # -------------------------------------------------
+
+    st.subheader("Evidence Source Library")
+
+    if not filtered_sources:
+
+        st.info(
+            "No matching sources found. "
+            "Try changing your search or filters."
+        )
+
+    else:
+
+        for index, source in enumerate(filtered_sources, start=1):
+
+            with st.expander(
+                f"{source['title']} | {source['source_id']}"
+            ):
+
+                st.markdown("#### Source Details")
+
+                col1, col2 = st.columns(2)
+
+                with col1:
+
+                    st.write("**Source ID**")
+                    st.write(source["source_id"])
+
+                    st.write("**Publisher**")
+                    st.write(source["publisher"])
+
+                with col2:
+
+                    st.write("**Source Type**")
+                    st.write(source["source_type"])
+
+                    st.write("**Publication Date**")
+                    st.write(source["date"])
+
+                st.divider()
+
+                # Source URL
+                st.markdown("#### Original Reference")
+
+                source_url = source["url"]
+
+                if (
+                    isinstance(source_url, str)
+                    and source_url.startswith(("https://", "http://"))
+                ):
+
+                    st.link_button(
+                        "Open Original Source",
+                        source_url,
+                        key=f"source_library_link_{index}"
+                    )
+
+                else:
+
+                    st.caption("Source URL is not available.")
+
+                st.divider()
+
+                # Associated incident
+                st.markdown("#### Associated Incident")
+
+                st.write(source["incident_name"])
+
+                st.caption(
+                    f"Incident ID: {source['incident_id']}"
+                )
+
+                st.divider()
+
+                # Linked findings
+                st.markdown("#### Linked Findings")
+
+                if source["findings"]:
+
+                    for finding in source["findings"]:
+
+                        st.markdown(
+                            f"**{finding.get('finding_id', 'Unknown')}**"
+                        )
+
+                        st.write(
+                            finding.get("claim", "No claim available")
+                        )
+
+                        st.caption(
+                            "Evidence Status: "
+                            + finding.get(
+                                "evidence_status", "unknown"
+                            ).replace("_", " ").title()
+                        )
+
+                else:
+
+                    st.caption(
+                        "No findings are directly linked to this source."
+                    )
+
+                st.divider()
+
+                # Linked MITRE techniques
+                st.markdown("#### Linked MITRE ATT&CK Techniques")
+
+                if source["techniques"]:
+
+                    for technique in source["techniques"]:
+
+                        st.write(
+                            f"• {technique.get('technique_id', 'Unknown')} "
+                            f"— {technique.get('name', 'Unknown')}"
+                        )
+
+                else:
+
+                    st.caption(
+                        "No MITRE ATT&CK techniques are linked to this source."
+                    )
+
+    st.divider()
+
+    st.info(
+        "Note: Source references show how evidence is connected "
+        "to the incidents, findings, and techniques recorded "
+        "in the current CyberScope dataset. A listed source "
+        "does not automatically establish the accuracy of a claim."
+    )
