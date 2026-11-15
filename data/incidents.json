@@ -204,5 +204,515 @@
         "source_type": "vendor_advisory"
       }
     ]
+  },
+  {
+  "incident_id": "INC-2019-BALTIMORE",
+  "name": "Baltimore RobbinHood Ransomware Attack",
+  "category": "Ransomware",
+  "summary": "In May 2019, Baltimore City experienced a ransomware attack involving the RobbinHood malware. The attack disrupted access to city computer systems and required emergency response and recovery efforts.",
+  "findings": [
+    {
+      "finding_id": "BAL-F001",
+      "claim": "Baltimore City discovered that it was the victim of a ransomware attack on May 7, 2019.",
+      "evidence_status": "supported",
+      "source_ids": ["BAL-S001", "BAL-S002"]
+    },
+    {
+      "finding_id": "BAL-F002",
+      "claim": "The ransomware involved in the attack was identified as RobbinHood.",
+      "evidence_status": "supported",
+      "source_ids": ["BAL-S002", "BAL-S003"]
+    },
+    {
+      "finding_id": "BAL-F003",
+      "claim": "The attack caused outages in access to city systems and disrupted the use of municipal computer systems.",
+      "evidence_status": "supported",
+      "source_ids": ["BAL-S001", "BAL-S002"]
+    },
+    {
+      "finding_id": "BAL-F004",
+      "claim": "Baltimore authorised emergency procurement of IT services and products to support its response and recovery.",
+      "evidence_status": "supported",
+      "source_ids": ["BAL-S002"]
+    }
+  ],
+ "techniques": [
+  {
+    "technique_id": "T1059.003",
+    "name": "Command and Scripting Interpreter: Windows Command Shell",
+    "source_ids": ["BAL-S004"]
+  },
+  {
+    "technique_id": "T1486",
+    "name": "Data Encrypted for Impact",
+    "source_ids": ["BAL-S004"]
+  },
+  {
+    "technique_id": "T1685",
+    "name": "Disable or Modify Tools",
+    "source_ids": ["BAL-S004"]
+  },
+  {
+    "technique_id": "T1070.005",
+    "name": "Indicator Removal: Network Share Connection Removal",
+    "source_ids": ["BAL-S004"]
+  },
+  {
+    "technique_id": "T1490",
+    "name": "Inhibit System Recovery",
+    "source_ids": ["BAL-S004"]
+  },
+  {
+    "technique_id": "T1489",
+    "name": "Service Stop",
+    "source_ids": ["BAL-S004"]
   }
+],
+  "sources": [
+    {
+      "source_id": "BAL-S001",
+      "title": "City Provides Update on Baltimore Ransomware Attack",
+      "publisher": "City of Baltimore",
+      "url": "https://content.govdelivery.com/accounts/MDBALT/bulletins/2459686",
+      "published_date": "2019-05-17",
+      "source_type": "government_statement"
+    },
+    {
+      "source_id": "BAL-S002",
+      "title": "Board of Estimates Meeting Minutes - October 16, 2019",
+      "publisher": "Baltimore City",
+      "url": "https://s3.amazonaws.com/baltimorecity.gov.if-us-east-1/s3fs-public/2024-08/4761-4920_2019-10-16.pdf",
+      "published_date": "2019-10-16",
+      "source_type": "government_record"
+    },
+    {
+      "source_id": "BAL-S003",
+      "title": "Sina Gholinejad Indictment",
+      "publisher": "U.S. Department of Justice",
+      "url": "https://www.justice.gov/opa/media/1401606/dl?inline=",
+      "published_date": "2024-04-04",
+      "source_type": "legal_document"
+    },
+    {
+  "source_id": "BAL-S004",
+  "title": "RobbinHood, Software S0400",
+  "publisher": "MITRE ATT&CK",
+  "url": "https://attack.mitre.org/software/S0400/",
+  "published_date": null,
+  "source_type": "threat_intelligence_framework"
+}
+  ]
+},
+{
+  "incident_id": "INC-2019-NORSK-HYDRO",
+  "name": "Norsk Hydro LockerGoga Ransomware Attack",
+  "category": "Ransomware",
+  "summary": "On March 19, 2019, Norwegian aluminium producer Norsk Hydro experienced a major cyberattack involving LockerGoga ransomware. The incident affected the organisation globally, with its Extruded Solutions business experiencing particularly significant operational disruption and financial losses.",
+  "findings": [
+    {
+      "finding_id": "HYD-F001",
+      "claim": "Norsk Hydro experienced a significant cyberattack on March 19, 2019.",
+      "evidence_status": "supported",
+      "source_ids": ["HYD-S001", "HYD-S002"]
+    },
+    {
+      "finding_id": "HYD-F002",
+      "claim": "The attack involved LockerGoga ransomware, which encrypted files on computers and servers.",
+      "evidence_status": "supported",
+      "source_ids": ["HYD-S002", "HYD-S003"]
+    },
+    {
+      "finding_id": "HYD-F003",
+      "claim": "The attack affected Norsk Hydro employees across 40 countries.",
+      "evidence_status": "supported",
+      "source_ids": ["HYD-S002"]
+    },
+    {
+      "finding_id": "HYD-F004",
+      "claim": "The attack caused production disruptions and financial losses, with the estimated financial impact reaching NOK 650–750 million.",
+      "evidence_status": "supported",
+      "source_ids": ["HYD-S001"]
+    },
+    {
+      "finding_id": "HYD-F005",
+      "claim": "Norsk Hydro decided not to pay the ransom and worked with cybersecurity specialists to restore operations.",
+      "evidence_status": "supported",
+      "source_ids": ["HYD-S003"]
+    }
+  ],
+  "techniques": [
+    {
+      "technique_id": "T1566.001",
+      "name": "Spearphishing: Spearphishing Attachment",
+      "source_ids": ["HYD-S002", "HYD-S003"]
+    },
+    {
+      "technique_id": "T1204.002",
+      "name": "User Execution: Malicious File",
+      "source_ids": ["HYD-S002", "HYD-S003"]
+    },
+    {
+      "technique_id": "T1570",
+      "name": "Lateral Tool Transfer",
+      "source_ids": ["HYD-S002"]
+    },
+    {
+      "technique_id": "T1486",
+      "name": "Data Encrypted for Impact",
+      "source_ids": ["HYD-S002", "HYD-S003"]
+    },
+    {
+      "technique_id": "T0827",
+      "name": "Loss of Control",
+      "source_ids": ["HYD-S002"]
+    },
+    {
+      "technique_id": "T0828",
+      "name": "Loss of Productivity and Revenue",
+      "source_ids": ["HYD-S002"]
+    },
+    {
+      "technique_id": "T0829",
+      "name": "Loss of View",
+      "source_ids": ["HYD-S002"]
+    }
+  ],
+  "sources": [
+    {
+      "source_id": "HYD-S001",
+      "title": "Annual Report 2019 - Financial Statements and Board of Directors' Report",
+      "publisher": "Norsk Hydro",
+      "url": "https://www.hydro.com/globalassets/download-center/investor-downloads/ar19/financial-statements-and-board-of-directors-report-2019-web.pdf",
+      "published_date": null,
+      "source_type": "annual_report"
+    },
+    {
+      "source_id": "HYD-S002",
+      "title": "Hackers hit Norsk Hydro with ransomware. The company responded with transparency",
+      "publisher": "Microsoft Source",
+      "url": "https://news.microsoft.com/source/features/digital-transformation/hackers-hit-norsk-hydro-ransomware-company-responded-transparency",
+      "published_date": null,
+      "source_type": "technical_case_study"
+    },
+    {
+      "source_id": "HYD-S003",
+      "title": "Norsk Hydro responds to ransomware attack with transparency",
+      "publisher": "Microsoft Security",
+      "url": "https://www.microsoft.com/en-us/security/blog/2019/12/17/norsk-hydro-ransomware-attack-transparency/",
+      "published_date": "2019-12-17",
+      "source_type": "technical_analysis"
+    }
+  ]
+},
+{
+  "incident_id": "INC-2020-GARMIN",
+  "name": "Garmin Ransomware Attack",
+  "category": "Ransomware",
+  "summary": "In July 2020, Garmin experienced a ransomware attack that disrupted several of its online services and internal systems. Services including Garmin Connect, flyGarmin and customer support were affected. External cybersecurity reporting identified the ransomware as WastedLocker.",
+  "findings": [
+    {
+      "finding_id": "GAR-F001",
+      "claim": "Garmin experienced a major service outage beginning on July 23, 2020.",
+      "evidence_status": "supported",
+      "source_ids": ["GAR-S001", "GAR-S002"]
+    },
+    {
+      "finding_id": "GAR-F002",
+      "claim": "Garmin confirmed that the incident involved a ransomware attack that encrypted some of its systems.",
+      "evidence_status": "supported",
+      "source_ids": ["GAR-S001"]
+    },
+    {
+      "finding_id": "GAR-F003",
+      "claim": "The outage affected Garmin Connect, its website and customer support services.",
+      "evidence_status": "supported",
+      "source_ids": ["GAR-S001", "GAR-S002"]
+    },
+    {
+      "finding_id": "GAR-F004",
+      "claim": "External cybersecurity reporting identified the ransomware involved as WastedLocker.",
+      "evidence_status": "supported",
+      "source_ids": ["GAR-S002", "GAR-S003"]
+    },
+    {
+      "finding_id": "GAR-F005",
+      "claim": "Garmin stated that it had no indication that customer activity, payment or other personal information had been affected by the outage.",
+      "evidence_status": "supported",
+      "source_ids": ["GAR-S001"]
+    }
+  ],
+  "techniques": [
+  {
+    "technique_id": "T1486",
+    "name": "Data Encrypted for Impact",
+    "source_ids": ["GAR-S001"]
+  }
+],
+  "sources": [
+    {
+      "source_id": "GAR-S001",
+      "title": "Garmin Issues Statement on Recent Outage",
+      "publisher": "Garmin",
+      "url": "https://www.garmin.com/en-US/newsroom/press-release/uncategorized/2020-garmin-issues-statement-on-recent-outage/",
+      "published_date": "2020-07-27",
+      "source_type": "company_statement"
+    },
+    {
+      "source_id": "GAR-S002",
+      "title": "Garmin global outage caused by ransomware attack, sources say",
+      "publisher": "TechCrunch",
+      "url": "https://techcrunch.com/2020/07/25/garmin-outage-ransomware-sources/",
+      "published_date": "2020-07-25",
+      "source_type": "investigative_reporting"
+    },
+    {
+      "source_id": "GAR-S003",
+      "title": "Garmin outage caused by confirmed WastedLocker ransomware attack",
+      "publisher": "BleepingComputer",
+      "url": "https://www.bleepingcomputer.com/news/security/garmin-outage-caused-by-confirmed-wastedlocker-ransomware-attack/",
+      "published_date": "2020-07-24",
+      "source_type": "technical_reporting"
+    }
+  ]
+},
+{
+  "incident_id": "INC-2021-COLONIAL",
+  "name": "Colonial Pipeline DarkSide Ransomware Attack",
+  "category": "Ransomware / Critical Infrastructure",
+  "summary": "On May 7, 2021, Colonial Pipeline experienced a ransomware attack that led the company to temporarily shut down its pipeline operations. The FBI attributed the attack to the DarkSide ransomware group. Attackers reportedly gained initial access through a compromised VPN account using valid credentials. The incident disrupted fuel distribution across parts of the eastern United States.",
+  "findings": [
+    {
+      "finding_id": "COL-F001",
+      "claim": "Colonial Pipeline experienced a ransomware attack on May 7, 2021.",
+      "evidence_status": "supported",
+      "source_ids": ["COL-S001", "COL-S002"]
+    },
+    {
+      "finding_id": "COL-F002",
+      "claim": "The FBI confirmed that DarkSide ransomware was responsible for compromising Colonial Pipeline's networks.",
+      "evidence_status": "supported",
+      "source_ids": ["COL-S001"]
+    },
+    {
+      "finding_id": "COL-F003",
+      "claim": "Colonial Pipeline proactively shut down its pipeline system in response to the ransomware attack.",
+      "evidence_status": "supported",
+      "source_ids": ["COL-S002"]
+    },
+    {
+      "finding_id": "COL-F004",
+      "claim": "The company paid a ransom of approximately 75 bitcoins following the attack.",
+      "evidence_status": "supported",
+      "source_ids": ["COL-S003"]
+    },
+    {
+      "finding_id": "COL-F005",
+      "claim": "Colonial Pipeline announced that its entire pipeline system had restarted on May 13, 2021.",
+      "evidence_status": "supported",
+      "source_ids": ["COL-S002"]
+    },
+    {
+      "finding_id": "COL-F006",
+      "claim": "The United States Department of Justice announced the seizure of approximately 63.7 bitcoins associated with the ransom payment.",
+      "evidence_status": "supported",
+      "source_ids": ["COL-S003"]
+    },
+    {
+      "finding_id": "COL-F007",
+      "claim": "Attackers reportedly gained initial access through a VPN account associated with an expired account and valid credentials.",
+      "evidence_status": "supported",
+      "source_ids": ["COL-S004"]
+    }
+  ],
+  "techniques": [
+    {
+      "technique_id": "T1133",
+      "name": "External Remote Services",
+      "source_ids": ["COL-S004"]
+    },
+    {
+      "technique_id": "T1078",
+      "name": "Valid Accounts",
+      "source_ids": ["COL-S004"]
+    },
+    {
+      "technique_id": "T1486",
+      "name": "Data Encrypted for Impact",
+      "source_ids": ["COL-S001", "COL-S004"]
+    }
+  ],
+  "sources": [
+    {
+      "source_id": "COL-S001",
+      "title": "FBI Statement on Compromise of Colonial Pipeline Networks",
+      "publisher": "Federal Bureau of Investigation",
+      "url": "https://www.fbi.gov/news/press-releases/fbi-statement-on-compromise-of-colonial-pipeline-networks",
+      "published_date": "2021-05-10",
+      "source_type": "government_statement"
+    },
+    {
+      "source_id": "COL-S002",
+      "title": "Colonial Pipeline Cyber Incident",
+      "publisher": "U.S. Department of Energy",
+      "url": "https://www.energy.gov/ceser/colonial-pipeline-cyber-incident",
+      "published_date": null,
+      "source_type": "government_report"
+    },
+    {
+      "source_id": "COL-S003",
+      "title": "Department of Justice Seizes $2.3 Million in Cryptocurrency Paid to the Ransomware Extortionists Darkside",
+      "publisher": "U.S. Department of Justice",
+      "url": "https://www.justice.gov/archives/opa/pr/department-justice-seizes-23-million-cryptocurrency-paid-ransomware-extortionists-darkside",
+      "published_date": "2021-06-07",
+      "source_type": "government_statement"
+    },
+    {
+      "source_id": "COL-S004",
+      "title": "CyOTE Case Study: Colonial Pipeline",
+      "publisher": "Idaho National Laboratory",
+      "url": "https://cyote.inl.gov/content/uploads/24/2025/12/CyOTE-Case-Study_Colonial-Pipeline.pdf",
+      "published_date": null,
+      "source_type": "technical_case_study"
+    }
+  ]
+},
+{
+  "incident_id": "INC-2021-JBS",
+  "name": "JBS Foods REvil Ransomware Attack",
+  "category": "Ransomware / Food Supply Chain",
+  "summary": "On May 30, 2021, JBS USA experienced a cyberattack affecting servers supporting its North American and Australian IT systems. The FBI attributed the attack to REvil, also known as Sodinokibi. The incident disrupted operations at several facilities, although the company restored production using unaffected backup systems.",
+  "findings": [
+    {
+      "finding_id": "JBS-F001",
+      "claim": "JBS USA identified a cybersecurity attack on May 30, 2021, affecting servers supporting its North American and Australian IT systems.",
+      "evidence_status": "supported",
+      "source_ids": ["JBS-S001"]
+    },
+    {
+      "finding_id": "JBS-F002",
+      "claim": "The FBI attributed the JBS cyberattack to the REvil and Sodinokibi ransomware operation.",
+      "evidence_status": "supported",
+      "source_ids": ["JBS-S002"]
+    },
+    {
+      "finding_id": "JBS-F003",
+      "claim": "JBS temporarily shut down affected systems to isolate the intrusion and limit potential infection.",
+      "evidence_status": "supported",
+      "source_ids": ["JBS-S001", "JBS-S003"]
+    },
+    {
+      "finding_id": "JBS-F004",
+      "claim": "JBS stated that its backup servers were not affected by the attack and helped the company restore operations.",
+      "evidence_status": "supported",
+      "source_ids": ["JBS-S001", "JBS-S003"]
+    },
+    {
+      "finding_id": "JBS-F005",
+      "claim": "JBS announced that all its global facilities were fully operational by June 3, 2021.",
+      "evidence_status": "supported",
+      "source_ids": ["JBS-S003"]
+    },
+    {
+      "finding_id": "JBS-F006",
+      "claim": "JBS USA confirmed that it paid an $11 million ransom following the cyberattack.",
+      "evidence_status": "supported",
+      "source_ids": ["JBS-S004"]
+    }
+  ],
+  "techniques": [
+  {
+    "technique_id": "T0865",
+    "name": "Spearphishing",
+    "source_ids": ["JBS-S005"]
+  },
+  {
+    "technique_id": "T0863",
+    "name": "User Execution",
+    "source_ids": ["JBS-S005"]
+  },
+  {
+    "technique_id": "T0853",
+    "name": "Scripting",
+    "source_ids": ["JBS-S005"]
+  },
+  {
+    "technique_id": "T0890",
+    "name": "Exploitation for Privilege Escalation",
+    "source_ids": ["JBS-S005"]
+  },
+  {
+    "technique_id": "T0866",
+    "name": "Exploitation of Remote Services",
+    "source_ids": ["JBS-S005"]
+  },
+  {
+    "technique_id": "T0859",
+    "name": "Valid Accounts",
+    "source_ids": ["JBS-S005"]
+  },
+  {
+    "technique_id": "T0886",
+    "name": "Remote Services",
+    "source_ids": ["JBS-S005"]
+  },
+  {
+    "technique_id": "T0809",
+    "name": "Data Destruction",
+    "source_ids": ["JBS-S005"]
+  },
+  {
+    "technique_id": "T0826",
+    "name": "Loss of Availability",
+    "source_ids": ["JBS-S005"]
+  },
+  {
+    "technique_id": "T0828",
+    "name": "Loss of Productivity and Revenue",
+    "source_ids": ["JBS-S005"]
+  }
+],
+  "sources": [
+    {
+      "source_id": "JBS-S001",
+      "title": "JBS USA Cyberattack Media Statement - May 31",
+      "publisher": "JBS Foods",
+      "url": "https://jbsfoodsgroup.com/articles/jbs-usa-cyberattack-media-statement-may-31",
+      "published_date": "2021-05-31",
+      "source_type": "company_statement"
+    },
+    
+    {
+      "source_id": "JBS-S002",
+      "title": "FBI Statement on JBS Cyberattack",
+      "publisher": "Federal Bureau of Investigation",
+      "url": "https://www.fbi.gov/news/press-releases/press-releases/fbi-statement-on-jbs-cyberattack",
+      "published_date": "2021-06-02",
+      "source_type": "government_statement"
+    },
+    {
+      "source_id": "JBS-S003",
+      "title": "JBS USA and Pilgrim's Announce Resolution of Cyberattack",
+      "publisher": "JBS Foods",
+      "url": "https://jbsfoodsgroup.com/articles/jbs-usa-and-pilgrim-s-announce-resolution-if-cyberattack",
+      "published_date": "2021-06-03",
+      "source_type": "company_statement"
+    },
+    {
+      "source_id": "JBS-S004",
+      "title": "JBS USA Cyberattack Media Statement - June 9",
+      "publisher": "JBS Foods",
+      "url": "https://jbsfoodsgroup.com/articles/jbs-usa-cyberattack-media-statement-june-9",
+      "published_date": "2021-06-09",
+      "source_type": "company_statement"
+    },
+    {
+  "source_id": "JBS-S005",
+  "title": "Precursor Analysis Report: JBS Foods Ransomware Attack 2021",
+  "publisher": "Idaho National Laboratory / U.S. Department of Energy",
+  "url": "https://cyote.inl.gov/content/uploads/24/2025/12/CyOTE-Case-Study_JBS-Foods.pdf",
+  "published_date": "2023-03-31",
+  "source_type": "government_lab_technical_analysis"
+}
+  ]
+}
 ]

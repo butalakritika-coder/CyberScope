@@ -33,7 +33,67 @@ from src.evidence import (
 # ============================================
 # PAGE CONFIGURATION
 # ============================================
+# ============================================
+# HELPER FUNCTION: DISPLAY EVIDENCE STATUS
+# ============================================
 
+def display_evidence_status(status):
+
+    status_styles = {
+        "supported": {
+            "label": "SUPPORTED",
+            "color": "#75DDBA",
+            "background": "#17352F",
+            "border": "#28604F"
+        },
+        "unverified": {
+            "label": "UNVERIFIED",
+            "color": "#FBBF24",
+            "background": "#3B2F18",
+            "border": "#806323"
+        },
+        "disputed": {
+            "label": "DISPUTED",
+            "color": "#FCA5A5",
+            "background": "#3B2025",
+            "border": "#803D47"
+        },
+        "insufficient_evidence": {
+            "label": "INSUFFICIENT EVIDENCE",
+            "color": "#CBD5E1",
+            "background": "#293747",
+            "border": "#475569"
+        }
+    }
+
+    style = status_styles.get(
+        str(status).lower(),
+        {
+            "label": str(status).replace("_", " ").upper(),
+            "color": "#CBD5E1",
+            "background": "#293747",
+            "border": "#475569"
+        }
+    )
+
+    st.markdown(
+        f"""
+        <span style="
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            color: {style['color']};
+            background-color: {style['background']};
+            border: 1px solid {style['border']};
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        ">
+            {style['label']}
+        </span>
+        """,
+        unsafe_allow_html=True
+    )
 st.set_page_config(
     page_title="CyberScope | Threat Intelligence",
     page_icon="🔐",
